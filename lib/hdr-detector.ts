@@ -64,12 +64,11 @@ export function groupIntoBrackets(items: JpgWithExif[]): (PhotoItem | HdrItem)[]
       return aBias - bBias
     })
 
-    // Middle = file with ExposureBiasValue closest to 0
-    const middle = sorted.reduce((best, candidate) => {
-      const bestDist = Math.abs(best.exposureBiasValue ?? Infinity)
-      const candDist = Math.abs(candidate.exposureBiasValue ?? Infinity)
-      return candDist < bestDist ? candidate : best
-    })
+    // Middle = median position in the EV-sorted array (index floor(n/2)).
+    // Using the median instead of "closest to 0" avoids the tie-breaking problem
+    // where two equidistant frames (e.g. -1/3 and +1/3) would place the middle
+    // at index 0, leaving nothing to its left to label as under-exposed.
+    const middle = sorted[Math.floor(sorted.length / 2)]
 
     return {
       type: 'hdr',

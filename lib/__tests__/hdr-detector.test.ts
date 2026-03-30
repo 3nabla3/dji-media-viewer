@@ -43,7 +43,7 @@ describe('groupIntoBrackets', () => {
     expect(hdr.files[2]).toBe(items[2].file) // +1.0 (over)
   })
 
-  it('picks middle exposure as the file with ExposureBiasValue closest to 0', () => {
+  it('picks middle exposure as the median of the EV-sorted array', () => {
     const ts = '2024-01-01T10:00:02Z'
     const items = [
       makeJpg('DJI_0013.JPG', ts, -0.333),
@@ -52,8 +52,8 @@ describe('groupIntoBrackets', () => {
     ]
     const result = groupIntoBrackets(items)
     const hdr = result[0] as HdrItem
-    // 0.333 is closer to 0 than -0.333 (both equal in abs — pick first)
-    expect(hdr.middle).toBe(items[0].file) // |−0.333| == |+0.333|, first wins
+    // sorted ascending: [-0.333, +0.333, +1.0] → median is index 1 (+0.333)
+    expect(hdr.middle).toBe(items[1].file) // DJI_0014 at +0.333
   })
 
   it('handles 1-second boundary: merges consecutive files straddling a second', () => {
