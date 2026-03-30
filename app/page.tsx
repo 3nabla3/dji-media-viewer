@@ -54,6 +54,7 @@ function Gallery() {
     const firstPath = (files[0] as File & { webkitRelativePath: string }).webkitRelativePath
     setFolderName(firstPath.split('/')[0] ?? 'Unknown folder')
     setFilter('all')
+    router.replace('/', { scroll: false })
     setLoading(true)
     setError(null)
     try {
@@ -70,8 +71,7 @@ function Gallery() {
   }
 
   function handleSelect(index: number) {
-    const qs = searchParams.toString()
-    router.push(`/media/${index}${qs ? `?${qs}` : ''}`)
+    router.push(`/media/${index}`)
   }
 
   // ── Empty state ──────────────────────────────────────────────────────────
