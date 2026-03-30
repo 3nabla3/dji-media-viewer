@@ -22,7 +22,7 @@ async function makeThumbnail(file: File): Promise<string> {
   try {
     const thumb = await exifr.thumbnail(file)
     if (thumb) {
-      const blob = new Blob([thumb.buffer as ArrayBuffer], { type: 'image/jpeg' })
+      const blob = new Blob([new Uint8Array(thumb)], { type: 'image/jpeg' })
       const url = URL.createObjectURL(blob)
       cache.set(k, url)
       return url
