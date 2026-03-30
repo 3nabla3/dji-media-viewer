@@ -54,7 +54,12 @@ export function groupIntoBrackets(items: JpgWithExif[]): (PhotoItem | HdrItem)[]
 
   return groups.map((group): PhotoItem | HdrItem => {
     if (group.length === 1) {
-      return { type: 'photo', file: group[0].file }
+      const item = group[0]
+      return {
+        type: 'photo',
+        file: item.file,
+        date: item.dateTimeOriginal ?? new Date(item.file.lastModified),
+      }
     }
 
     // Sort by ExposureBiasValue ascending (undefined bias goes last)
@@ -74,6 +79,7 @@ export function groupIntoBrackets(items: JpgWithExif[]): (PhotoItem | HdrItem)[]
       type: 'hdr',
       files: sorted.map((s) => s.file),
       middle: middle.file,
+      date: middle.dateTimeOriginal ?? new Date(middle.file.lastModified),
     }
   })
 }
