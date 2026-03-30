@@ -30,6 +30,8 @@ export function groupByDate(
   items: { item: MediaItem; idx: number }[],
   now: Date = new Date(),
 ): DateSection[] {
+  // Local-time getters are intentional: we want the user's calendar day, not UTC.
+  // isoWeek() also receives a local Date and converts to UTC internally for stable arithmetic.
   const nowYear = now.getFullYear()
   const nowMonth = now.getMonth()
   const nowDay = now.getDate()
