@@ -82,7 +82,7 @@ export async function renderHdr(files: File[]): Promise<Blob> {
     }
 
     dst = new cv.Mat()
-    merger = cv.createMergeMertens()
+    merger = new cv.MergeMertens()
     merger.process(srcVec, dst)
 
     // dst is CV_32FC3 in [0,1] — scale to uint8
