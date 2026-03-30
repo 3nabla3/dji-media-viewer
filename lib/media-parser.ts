@@ -71,7 +71,12 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
     htmls.map(async (htmlFile) => {
       const html = await htmlFile.text()
       const tiles = collectPanoramaTiles(htmlFile, html, allFiles)
-      return { type: 'panorama' as const, htmlFile, tiles }
+      return {
+        type: 'panorama' as const,
+        htmlFile,
+        tiles,
+        date: new Date(htmlFile.lastModified),
+      }
     })
   )
 
@@ -94,7 +99,11 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
 
   const photoAndHdrItems = groupIntoBrackets(nonTileJpgs)
 
-  const videoItems: VideoItem[] = videos.map((file) => ({ type: 'video', file }))
+  const videoItems: VideoItem[] = videos.map((file) => ({
+    type: 'video',
+    file,
+    date: new Date(file.lastModified),
+  }))
 
   return [...videoItems, ...photoAndHdrItems, ...panoramaItems]
 }
