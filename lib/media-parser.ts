@@ -47,7 +47,7 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
     jpgs.map((file) =>
       exifr
         .parse(file, {
-          pick: ['DateTimeOriginal', 'ExposureBiasValue', 'XPComment'],
+          pick: ['DateTimeOriginal', 'ExposureCompensation', 'XPComment'],
         })
         .catch(() => null)
     )
@@ -61,7 +61,7 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
         ? exif.DateTimeOriginal
         : undefined,
       exposureBiasValue:
-        typeof exif?.ExposureBiasValue === 'number' ? exif.ExposureBiasValue : undefined,
+        typeof exif?.ExposureCompensation === 'number' ? exif.ExposureCompensation : undefined,
       xpCommentType: parseXpCommentType(exif?.XPComment),
     }
   })
