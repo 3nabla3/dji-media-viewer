@@ -1,66 +1,88 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// app/page.tsx
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import type { MediaItem } from '@/lib/media-types'
+import { parseMediaFiles } from '@/lib/media-parser'
+import FolderPicker from '@/components/FolderPicker'
+import FilterTabs, { type FilterType } from '@/components/FilterTabs'
+import MediaGrid from '@/components/MediaGrid'
+
+export default function Page() {
+  const [items, setItems] = useState<MediaItem[] | null>(null)
+  const [folderName, setFolderName] = useState<string>('')
+  const [filter, setFilter] = useState<FilterType>('all')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleFiles(files: File[]) {
+    if (files.length === 0) return
+
+    // Derive folder name from the first file's webkitRelativePath
+    const firstPath = (files[0] as File & { webkitRelativePath: string }).webkitRelativePath
+    setFolderName(firstPath.split('/')[0] ?? 'Unknown folder')
+    setFilter('all')
+    setLoading(true)
+    setError(null)
+
+    try {
+      const parsed = await parseMediaFiles(files)
+      setItems(parsed)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to parse media files.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── Empty state ──────────────────────────────────────────────────────────
+  if (!items && !loading) {
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center vh-100">
+        <h1 className="mb-3">DJI Media Viewer</h1>
+        <p className="text-muted mb-4">Select your drone SD card folder to get started.</p>
+        <FolderPicker onFiles={handleFiles} />
+      </div>
+    )
+  }
+
+  // ── Loading state ────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center vh-100">
+        <div className="spinner-border text-primary mb-3" role="status" />
+        <p className="text-muted">Reading media files…</p>
+      </div>
+    )
+  }
+
+  // ── Error state ──────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center vh-100">
+        <div className="alert alert-danger">{error}</div>
+        <FolderPicker onFiles={handleFiles} />
+      </div>
+    )
+  }
+
+  // ── Loaded state ─────────────────────────────────────────────────────────
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div>
+      <nav className="navbar navbar-light bg-light border-bottom mb-4">
+        <div className="container-fluid">
+          <span className="navbar-brand mb-0 h1">DJI Media Viewer</span>
+          <span className="text-muted small me-auto ms-3">
+            {folderName} · {items!.length} items
+          </span>
+          <FolderPicker onFiles={handleFiles} />
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </nav>
+
+      <div className="container-fluid">
+        <FilterTabs items={items!} active={filter} onChange={setFilter} />
+        <MediaGrid items={items!} filter={filter} />
+      </div>
     </div>
-  );
+  )
 }
