@@ -34,15 +34,18 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
     const previewUrl = URL.createObjectURL(item.middle)
     setUrl(previewUrl)
     setHdrRendering(true)
+    setHdrError(false)
 
     let hdrBlobUrl: string | null = null
     let cancelled = false
     let errorTimer: ReturnType<typeof setTimeout> | null = null
+    let previewRevoked = false
 
     renderHdr(item.files)
       .then((blob) => {
         if (cancelled) return
         URL.revokeObjectURL(previewUrl)
+        previewRevoked = true
         hdrBlobUrl = URL.createObjectURL(blob)
         setUrl(hdrBlobUrl)
         setHdrRendering(false)
@@ -56,7 +59,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
 
     return () => {
       cancelled = true
-      URL.revokeObjectURL(previewUrl)
+      if (!previewRevoked) URL.revokeObjectURL(previewUrl)
       if (hdrBlobUrl) URL.revokeObjectURL(hdrBlobUrl)
       if (errorTimer) clearTimeout(errorTimer)
     }
