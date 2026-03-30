@@ -128,6 +128,9 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
           <MetaTile label="Gimbal Pitch" value={dji.GimbalPitchDegree ? `${dji.GimbalPitchDegree}°` : '—'} />
           <MetaTile label="Gimbal Yaw" value={dji.GimbalYawDegree ? `${dji.GimbalYawDegree}°` : '—'} />
           <MetaTile label="Flight Yaw" value={dji.FlightYawDegree ? `${dji.FlightYawDegree}°` : '—'} />
+          <MetaTile label="Gimbal Roll" value={dji.GimbalRollDegree ? `${dji.GimbalRollDegree}°` : '—'} />
+          <MetaTile label="Flight Pitch" value={dji.FlightPitchDegree ? `${dji.FlightPitchDegree}°` : '—'} />
+          <MetaTile label="Flight Roll" value={dji.FlightRollDegree ? `${dji.FlightRollDegree}°` : '—'} />
         </div>
       </div>
     </div>

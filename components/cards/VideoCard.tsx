@@ -19,6 +19,7 @@ export default function VideoCard({ item, onClick }: { item: VideoItem; onClick:
     <div className="card h-100" style={{ cursor: 'pointer' }} onClick={onClick}>
       <video
         src={url}
+        preload="none"
         className="card-img-top"
         style={{ maxHeight: '200px', objectFit: 'cover' }}
       />
