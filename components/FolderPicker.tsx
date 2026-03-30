@@ -23,6 +23,7 @@ export default function FolderPicker({ onFiles }: FolderPickerProps) {
         // @ts-expect-error — webkitdirectory is not in React's typings
         webkitdirectory=""
         multiple
+        accept="image/*,video/*,.html"
         className="d-none"
         onChange={handleChange}
       />

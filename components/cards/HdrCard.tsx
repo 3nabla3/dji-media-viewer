@@ -1,3 +1,4 @@
+// components/cards/HdrCard.tsx
 'use client'
 
 // TODO: Replace middle-exposure preview with OpenCV.js createMergeMertens exposure fusion.
@@ -5,11 +6,19 @@
 // cv.MergeMertens accepts an array of Mat images and produces a blended result.
 // OpenCV.js is ~9MB WASM — defer until HDR quality becomes a priority.
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import type { HdrItem } from '@/lib/media-types'
 
 export default function HdrCard({ item }: { item: HdrItem }) {
-  const url = useMemo(() => URL.createObjectURL(item.middle), [item.middle])
+  const [url, setUrl] = useState<string>('')
+
+  useEffect(() => {
+    const objectUrl = URL.createObjectURL(item.middle)
+    setUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [item.middle])
+
+  if (!url) return null
 
   return (
     <div className="card h-100 border-warning">

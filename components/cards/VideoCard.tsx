@@ -1,10 +1,19 @@
+// components/cards/VideoCard.tsx
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import type { VideoItem } from '@/lib/media-types'
 
 export default function VideoCard({ item }: { item: VideoItem }) {
-  const url = useMemo(() => URL.createObjectURL(item.file), [item.file])
+  const [url, setUrl] = useState<string>('')
+
+  useEffect(() => {
+    const objectUrl = URL.createObjectURL(item.file)
+    setUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [item.file])
+
+  if (!url) return null
 
   return (
     <div className="card h-100">

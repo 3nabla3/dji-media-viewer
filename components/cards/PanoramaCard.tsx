@@ -1,13 +1,17 @@
+// components/cards/PanoramaCard.tsx
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import type { PanoramaItem } from '@/lib/media-types'
 
 export default function PanoramaCard({ item }: { item: PanoramaItem }) {
-  const tileUrls = useMemo(
-    () => item.tiles.map((f) => URL.createObjectURL(f)),
-    [item.tiles]
-  )
+  const [tileUrls, setTileUrls] = useState<string[]>([])
+
+  useEffect(() => {
+    const urls = item.tiles.map((f) => URL.createObjectURL(f))
+    setTileUrls(urls)
+    return () => urls.forEach((u) => URL.revokeObjectURL(u))
+  }, [item.tiles])
 
   return (
     <div className="card h-100">
