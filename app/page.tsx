@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { parseMediaFiles } from '@/lib/media-parser'
+import { loadOpenCV } from '@/lib/opencv-hdr'
 import { useMediaContext } from '@/lib/media-context'
 import FolderPicker from '@/components/FolderPicker'
 import FilterTabs, { type FilterType } from '@/components/FilterTabs'
@@ -27,6 +28,9 @@ export default function Page() {
     try {
       const parsed = await parseMediaFiles(files)
       setItems(parsed)
+      if (parsed.some((item) => item.type === 'hdr')) {
+        loadOpenCV().catch(() => {}) // preload WASM while user browses gallery
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse media files.')
     } finally {

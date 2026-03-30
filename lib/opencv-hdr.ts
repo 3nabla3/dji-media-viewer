@@ -1,5 +1,5 @@
 // lib/opencv-hdr.ts
-// Browser-only: loads OpenCV.js from CDN and performs Mertens HDR exposure fusion.
+// Browser-only: loads OpenCV.js and performs Mertens HDR exposure fusion.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CV = any
@@ -12,26 +12,27 @@ declare global {
 
 let cvLoadPromise: Promise<void> | null = null
 
-function loadOpenCV(): Promise<void> {
+export function loadOpenCV(): Promise<void> {
   if (cvLoadPromise) return cvLoadPromise
   cvLoadPromise = new Promise<void>((resolve, reject) => {
-    // Already loaded and initialized
-    if (typeof window.cv !== 'undefined' && window.cv.Mat) {
+    // Already initialized: cv is the module object, not the async factory function
+    if (typeof window.cv !== 'undefined' && typeof window.cv !== 'function') {
       resolve()
       return
     }
     const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/opencv.js@1.2.1/opencv.js'
+    script.src = '/opencv_js.js'
     script.async = true
-    script.onerror = () => reject(new Error('Failed to load OpenCV.js from CDN'))
+    script.onerror = () => reject(new Error('Failed to load OpenCV.js'))
     script.onload = () => {
-      // cv may already be initialized synchronously, or need to wait for WASM
-      if (window.cv?.Mat) {
-        resolve()
-      } else {
-        window.cv = window.cv ?? {}
-        window.cv['onRuntimeInitialized'] = resolve
-      }
+      // window.cv is now the async factory from the Emscripten build.
+      // Call it to initialize the WASM module, then replace the factory with the module.
+      ;(window.cv as () => Promise<CV>)()
+        .then((module) => {
+          window.cv = module
+          resolve()
+        })
+        .catch(reject)
     }
     document.head.appendChild(script)
   })
