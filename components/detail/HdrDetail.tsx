@@ -8,6 +8,7 @@ import { parseXpComment } from '@/lib/dji-xp-comment'
 import { formatBytes, formatDate, formatShutter } from './format'
 import DetailNav from './DetailNav'
 import MetaTile from './MetaTile'
+import { renderHdr } from '@/lib/opencv-hdr'
 
 interface HdrExif {
   dateTimeOriginal?: Date
@@ -25,13 +26,41 @@ interface HdrExif {
 export default function HdrDetail({ item }: { item: HdrItem }) {
   const [url, setUrl] = useState('')
   const [exif, setExif] = useState<HdrExif>({})
+  const [hdrRendering, setHdrRendering] = useState(false)
+  const [hdrError, setHdrError] = useState(false)
   const mediaRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
-    const objectUrl = URL.createObjectURL(item.middle)
-    setUrl(objectUrl)
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [item.middle])
+    const previewUrl = URL.createObjectURL(item.middle)
+    setUrl(previewUrl)
+    setHdrRendering(true)
+
+    let hdrBlobUrl: string | null = null
+    let cancelled = false
+    let errorTimer: ReturnType<typeof setTimeout> | null = null
+
+    renderHdr(item.files)
+      .then((blob) => {
+        if (cancelled) return
+        URL.revokeObjectURL(previewUrl)
+        hdrBlobUrl = URL.createObjectURL(blob)
+        setUrl(hdrBlobUrl)
+        setHdrRendering(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setHdrRendering(false)
+        setHdrError(true)
+        errorTimer = setTimeout(() => setHdrError(false), 5000)
+      })
+
+    return () => {
+      cancelled = true
+      URL.revokeObjectURL(previewUrl)
+      if (hdrBlobUrl) URL.revokeObjectURL(hdrBlobUrl)
+      if (errorTimer) clearTimeout(errorTimer)
+    }
+  }, [item.files, item.middle])
 
   useEffect(() => {
     exifr
@@ -82,8 +111,35 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
       />
 
       {url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img ref={mediaRef} src={url} alt={item.middle.name} className="img-fluid w-100" />
+        <div className="position-relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img ref={mediaRef} src={url} alt={item.middle.name} className="img-fluid w-100" />
+          {hdrRendering && (
+            <div className="position-absolute top-0 end-0 m-2">
+              <span className="badge bg-dark bg-opacity-75 d-flex align-items-center gap-1">
+                <span
+                  className="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+                Rendering HDR…
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      {hdrError && (
+        <div
+          className="toast show position-fixed top-0 end-0 m-3"
+          role="alert"
+          aria-live="assertive"
+          style={{ zIndex: 1100 }}
+        >
+          <div className="toast-header">
+            <strong className="me-auto text-danger">HDR Rendering Failed</strong>
+          </div>
+          <div className="toast-body">Showing middle exposure instead.</div>
+        </div>
       )}
 
       <div className="container-fluid py-4">
