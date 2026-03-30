@@ -50,7 +50,8 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
         setUrl(hdrBlobUrl)
         setHdrRendering(false)
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error(e)
         if (cancelled) return
         setHdrRendering(false)
         setHdrError(true)

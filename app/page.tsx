@@ -1,8 +1,8 @@
 // app/page.tsx
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { parseMediaFiles } from '@/lib/media-parser'
 import { loadOpenCV } from '@/lib/opencv-hdr'
 import { useMediaContext } from '@/lib/media-context'
@@ -10,13 +10,44 @@ import FolderPicker from '@/components/FolderPicker'
 import FilterTabs, { type FilterType } from '@/components/FilterTabs'
 import MediaGrid from '@/components/MediaGrid'
 
+const VALID_FILTERS = new Set<FilterType>(['all', 'video', 'photo', 'hdr', 'panorama'])
+
+function isFilterType(s: string | null): s is FilterType {
+  return s != null && VALID_FILTERS.has(s as FilterType)
+}
+
 export default function Page() {
+  return (
+    <Suspense>
+      <Gallery />
+    </Suspense>
+  )
+}
+
+function Gallery() {
   const { items, setItems } = useMediaContext()
   const [folderName, setFolderName] = useState<string>('')
-  const [filter, setFilter] = useState<FilterType>('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const tabParam = searchParams.get('tab')
+  const [filter, setFilter] = useState<FilterType>(
+    isFilterType(tabParam) ? tabParam : 'all',
+  )
+
+  function handleFilterChange(f: FilterType) {
+    setFilter(f)
+    const params = new URLSearchParams(searchParams.toString())
+    if (f === 'all') {
+      params.delete('tab')
+    } else {
+      params.set('tab', f)
+    }
+    const qs = params.toString()
+    router.replace(qs ? `/?${qs}` : '/', { scroll: false })
+  }
 
   async function handleFiles(files: File[]) {
     if (files.length === 0) return
@@ -39,7 +70,8 @@ export default function Page() {
   }
 
   function handleSelect(index: number) {
-    router.push(`/media/${index}`)
+    const qs = searchParams.toString()
+    router.push(`/media/${index}${qs ? `?${qs}` : ''}`)
   }
 
   // ── Empty state ──────────────────────────────────────────────────────────
@@ -86,7 +118,7 @@ export default function Page() {
         </div>
       </nav>
       <div className="container-fluid">
-        <FilterTabs items={items!} active={filter} onChange={setFilter} />
+        <FilterTabs items={items!} active={filter} onChange={handleFilterChange} />
         <MediaGrid items={items!} filter={filter} onSelect={handleSelect} />
       </div>
     </div>
