@@ -29,8 +29,5 @@ declare module 'mp4box' {
     appendBuffer(buffer: ArrayBuffer & { fileStart: number }): void
     flush(): void
   }
-  const MP4Box: {
-    createFile(): MP4File
-  }
-  export = MP4Box
+  export function createFile(): MP4File
 }
