@@ -10,6 +10,9 @@ declare module 'mp4box' {
   interface AudioTrackInfo {
     codec: string
     bitrate: number
+    duration: number
+    timescale: number
+    nb_samples: number
   }
   interface MP4Info {
     duration: number
@@ -17,7 +20,8 @@ declare module 'mp4box' {
     videoTracks: VideoTrackInfo[]
     audioTracks: AudioTrackInfo[]
     created?: Date
-    brands?: string[]
+    modified?: Date
+    isFragmented?: boolean
   }
   interface MP4File {
     onReady: (info: MP4Info) => void
@@ -25,6 +29,8 @@ declare module 'mp4box' {
     appendBuffer(buffer: ArrayBuffer & { fileStart: number }): void
     flush(): void
   }
-  function createFile(): MP4File
-  export default { createFile }
+  const MP4Box: {
+    createFile(): MP4File
+  }
+  export = MP4Box
 }
