@@ -50,9 +50,12 @@ export async function renderHdr(files: File[]): Promise<Blob> {
   await loadOpenCV()
   const cv = window.cv
 
+  if (files.length < 2) throw new Error('renderHdr requires at least 2 exposure files')
+
   const mats: CV[] = []
   const srcVec = new cv.MatVector()
   let dst: CV | null = null
+  let merger: CV | null = null
   let result: CV | null = null
   let rgba: CV | null = null
 
@@ -78,9 +81,8 @@ export async function renderHdr(files: File[]): Promise<Blob> {
     }
 
     dst = new cv.Mat()
-    const merger = cv.createMergeMertens()
+    merger = cv.createMergeMertens()
     merger.process(srcVec, dst)
-    merger.delete()
 
     // dst is CV_32FC3 in [0,1] — scale to uint8
     result = new cv.Mat()
@@ -113,5 +115,6 @@ export async function renderHdr(files: File[]): Promise<Blob> {
     dst?.delete()
     result?.delete()
     rgba?.delete()
+    merger?.delete()
   }
 }
