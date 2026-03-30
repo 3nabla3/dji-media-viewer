@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import type { PhotoItem } from '@/lib/media-types'
 
-export default function PhotoCard({ item }: { item: PhotoItem }) {
+export default function PhotoCard({ item, onClick }: { item: PhotoItem; onClick: () => void }) {
   const [url, setUrl] = useState<string>('')
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export default function PhotoCard({ item }: { item: PhotoItem }) {
   if (!url) return null
 
   return (
-    <div className="card h-100">
+    <div className="card h-100" style={{ cursor: 'pointer' }} onClick={onClick}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}

@@ -2,29 +2,28 @@
 'use client'
 
 import { useState } from 'react'
-import type { MediaItem } from '@/lib/media-types'
+import { useRouter } from 'next/navigation'
 import { parseMediaFiles } from '@/lib/media-parser'
+import { useMediaContext } from '@/lib/media-context'
 import FolderPicker from '@/components/FolderPicker'
 import FilterTabs, { type FilterType } from '@/components/FilterTabs'
 import MediaGrid from '@/components/MediaGrid'
 
 export default function Page() {
-  const [items, setItems] = useState<MediaItem[] | null>(null)
+  const { items, setItems } = useMediaContext()
   const [folderName, setFolderName] = useState<string>('')
   const [filter, setFilter] = useState<FilterType>('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   async function handleFiles(files: File[]) {
     if (files.length === 0) return
-
-    // Derive folder name from the first file's webkitRelativePath
     const firstPath = (files[0] as File & { webkitRelativePath: string }).webkitRelativePath
     setFolderName(firstPath.split('/')[0] ?? 'Unknown folder')
     setFilter('all')
     setLoading(true)
     setError(null)
-
     try {
       const parsed = await parseMediaFiles(files)
       setItems(parsed)
@@ -33,6 +32,10 @@ export default function Page() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function handleSelect(index: number) {
+    router.push(`/media/${index}`)
   }
 
   // ── Empty state ──────────────────────────────────────────────────────────
@@ -78,10 +81,9 @@ export default function Page() {
           <FolderPicker onFiles={handleFiles} />
         </div>
       </nav>
-
       <div className="container-fluid">
         <FilterTabs items={items!} active={filter} onChange={setFilter} />
-        <MediaGrid items={items!} filter={filter} />
+        <MediaGrid items={items!} filter={filter} onSelect={handleSelect} />
       </div>
     </div>
   )
