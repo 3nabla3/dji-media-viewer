@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './globals.css'
+import { MediaProvider } from '@/lib/media-context'
 
 export const metadata: Metadata = {
   title: 'DJI Media Viewer',
@@ -13,7 +14,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <MediaProvider>{children}</MediaProvider>
+      </body>
     </html>
   )
 }
