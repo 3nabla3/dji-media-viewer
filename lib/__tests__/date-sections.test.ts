@@ -91,4 +91,11 @@ describe('groupByDate', () => {
   it('returns empty array when given no items', () => {
     expect(groupByDate([], NOW)).toEqual([])
   })
+
+  it('places an item from the Monday starting now\'s week into This Week', () => {
+    // now = Thursday 2024-06-13 (week 24). Monday 2024-06-10 is the first day of week 24.
+    const entry = makeItem(new Date('2024-06-10T00:01:00'))
+    const sections = groupByDate([entry], NOW)
+    expect(sections[0].label).toBe('This Week')
+  })
 })
