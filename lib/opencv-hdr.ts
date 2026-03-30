@@ -35,6 +35,9 @@ function loadOpenCV(): Promise<void> {
     }
     document.head.appendChild(script)
   })
+  cvLoadPromise.catch(() => {
+    cvLoadPromise = null
+  })
   return cvLoadPromise
 }
 
@@ -59,7 +62,8 @@ export async function renderHdr(files: File[]): Promise<Blob> {
       const canvas = document.createElement('canvas')
       canvas.width = bitmap.width
       canvas.height = bitmap.height
-      const ctx = canvas.getContext('2d')!
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('Failed to get 2D canvas context')
       ctx.drawImage(bitmap, 0, 0)
       bitmap.close()
 
@@ -101,6 +105,9 @@ export async function renderHdr(files: File[]): Promise<Blob> {
       )
     })
   } finally {
+    // Safe to free mats here: cv.imshow() has already copied pixel data into
+    // outputCanvas's own browser-managed buffer. toBlob() reads from that buffer,
+    // not from the cv.Mat objects.
     srcVec.delete()
     mats.forEach((m) => m.delete())
     dst?.delete()
