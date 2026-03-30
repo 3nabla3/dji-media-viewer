@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import type { VideoItem } from '@/lib/media-types'
 
-export default function VideoCard({ item }: { item: VideoItem }) {
+export default function VideoCard({ item, onClick }: { item: VideoItem; onClick: () => void }) {
   const [url, setUrl] = useState<string>('')
 
   useEffect(() => {
@@ -16,10 +16,9 @@ export default function VideoCard({ item }: { item: VideoItem }) {
   if (!url) return null
 
   return (
-    <div className="card h-100">
+    <div className="card h-100" style={{ cursor: 'pointer' }} onClick={onClick}>
       <video
         src={url}
-        controls
         className="card-img-top"
         style={{ maxHeight: '200px', objectFit: 'cover' }}
       />

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import type { PanoramaItem } from '@/lib/media-types'
 
-export default function PanoramaCard({ item }: { item: PanoramaItem }) {
+export default function PanoramaCard({ item, onClick }: { item: PanoramaItem; onClick: () => void }) {
   const [tileUrls, setTileUrls] = useState<string[]>([])
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export default function PanoramaCard({ item }: { item: PanoramaItem }) {
   }, [item.tiles])
 
   return (
-    <div className="card h-100">
+    <div className="card h-100" style={{ cursor: 'pointer' }} onClick={onClick}>
       <div className="card-header p-2">
         <span className="badge bg-info text-dark me-1">PANORAMA</span>
         <small className="text-muted">

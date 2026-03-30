@@ -3,13 +3,11 @@
 
 // TODO: Replace middle-exposure preview with OpenCV.js createMergeMertens exposure fusion.
 // See: https://docs.opencv.org/4.x/d6/df5/group__photo__hdr.html
-// cv.MergeMertens accepts an array of Mat images and produces a blended result.
-// OpenCV.js is ~9MB WASM — defer until HDR quality becomes a priority.
 
 import { useEffect, useState } from 'react'
 import type { HdrItem } from '@/lib/media-types'
 
-export default function HdrCard({ item }: { item: HdrItem }) {
+export default function HdrCard({ item, onClick }: { item: HdrItem; onClick: () => void }) {
   const [url, setUrl] = useState<string>('')
 
   useEffect(() => {
@@ -21,7 +19,7 @@ export default function HdrCard({ item }: { item: HdrItem }) {
   if (!url) return null
 
   return (
-    <div className="card h-100 border-warning">
+    <div className="card h-100 border-warning" style={{ cursor: 'pointer' }} onClick={onClick}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
