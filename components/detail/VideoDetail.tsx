@@ -95,6 +95,7 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
       <DetailNav
         filename={item.file.name}
         badge={<span className="badge bg-secondary">VIDEO</span>}
+        onFullscreen={() => videoRef.current?.requestFullscreen()}
       />
 
       {url && (

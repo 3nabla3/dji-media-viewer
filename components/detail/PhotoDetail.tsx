@@ -1,7 +1,7 @@
 // components/detail/PhotoDetail.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import exifr from 'exifr'
 import type { PhotoItem } from '@/lib/media-types'
 import { parseXpComment } from '@/lib/dji-xp-comment'
@@ -28,6 +28,7 @@ export default function PhotoDetail({ item }: { item: PhotoItem }) {
   const [url, setUrl] = useState('')
   const [exif, setExif] = useState<PhotoExif>({})
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null)
+  const mediaRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
     const objectUrl = URL.createObjectURL(item.file)
@@ -81,11 +82,13 @@ export default function PhotoDetail({ item }: { item: PhotoItem }) {
       <DetailNav
         filename={item.file.name}
         badge={<span className="badge bg-success">PHOTO</span>}
+        onFullscreen={() => mediaRef.current?.requestFullscreen()}
       />
 
       {url && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          ref={mediaRef}
           src={url}
           alt={item.file.name}
           className="img-fluid w-100"

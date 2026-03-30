@@ -1,7 +1,7 @@
 // components/detail/HdrDetail.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import exifr from 'exifr'
 import type { HdrItem } from '@/lib/media-types'
 import { parseXpComment } from '@/lib/dji-xp-comment'
@@ -25,6 +25,7 @@ interface HdrExif {
 export default function HdrDetail({ item }: { item: HdrItem }) {
   const [url, setUrl] = useState('')
   const [exif, setExif] = useState<HdrExif>({})
+  const mediaRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
     const objectUrl = URL.createObjectURL(item.middle)
@@ -77,11 +78,12 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
       <DetailNav
         filename={item.middle.name}
         badge={<span className="badge bg-warning text-dark">HDR</span>}
+        onFullscreen={() => mediaRef.current?.requestFullscreen()}
       />
 
       {url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt={item.middle.name} className="img-fluid w-100" />
+        <img ref={mediaRef} src={url} alt={item.middle.name} className="img-fluid w-100" />
       )}
 
       <div className="container-fluid py-4">

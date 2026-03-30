@@ -1,7 +1,7 @@
 // components/detail/PanoramaDetail.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PanoramaItem } from '@/lib/media-types'
 import { formatBytes } from './format'
 import DetailNav from './DetailNav'
@@ -9,6 +9,7 @@ import MetaTile from './MetaTile'
 
 export default function PanoramaDetail({ item }: { item: PanoramaItem }) {
   const [iframeUrl, setIframeUrl] = useState('')
+  const mediaRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
     const objectUrl = URL.createObjectURL(item.htmlFile)
@@ -23,10 +24,12 @@ export default function PanoramaDetail({ item }: { item: PanoramaItem }) {
       <DetailNav
         filename={item.htmlFile.name}
         badge={<span className="badge bg-info text-dark">PANORAMA</span>}
+        onFullscreen={() => mediaRef.current?.requestFullscreen()}
       />
 
       {iframeUrl && (
         <iframe
+          ref={mediaRef}
           src={iframeUrl}
           sandbox="allow-scripts allow-same-origin"
           className="w-100"
