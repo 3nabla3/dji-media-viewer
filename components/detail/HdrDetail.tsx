@@ -70,7 +70,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
       ? `${exif.gpsLongitude.toFixed(4)}° ${exif.gpsLongitudeRef ?? ''}`
       : '—'
 
-  const sorted = [...item.files].sort((a, b) => a.name.localeCompare(b.name))
+  const sorted = item.files  // already sorted ascending by ExposureBiasValue in hdr-detector.ts
   const middleIndex = sorted.findIndex((f) => f.name === item.middle.name)
 
   return (
