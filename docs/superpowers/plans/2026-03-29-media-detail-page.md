@@ -474,7 +474,7 @@ export default function Page() {
   // ── Loaded state ─────────────────────────────────────────────────────────
   return (
     <div>
-      <nav className="navbar navbar-light bg-light border-bottom mb-4">
+      <nav className="navbar border-bottom mb-4">
         <div className="container-fluid">
           <span className="navbar-brand mb-0 h1">DJI Media Viewer</span>
           <span className="text-muted small me-auto ms-3">
@@ -790,7 +790,7 @@ interface MetaTileProps {
 export default function MetaTile({ label, value }: MetaTileProps) {
   return (
     <div className="col-6 col-md-4 col-lg-3">
-      <div className="bg-light rounded p-2">
+      <div className="rounded p-2">
         <div
           className="text-muted"
           style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}

@@ -1115,7 +1115,7 @@ export default function Page() {
   // ── Loaded state ─────────────────────────────────────────────────────────
   return (
     <div>
-      <nav className="navbar navbar-light bg-light border-bottom mb-4">
+      <nav className="navbar navbar-light border-bottom mb-4">
         <div className="container-fluid">
           <span className="navbar-brand mb-0 h1">DJI Media Viewer</span>
           <span className="text-muted small me-auto ms-3">
