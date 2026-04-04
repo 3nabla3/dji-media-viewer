@@ -4,6 +4,26 @@
 import { Card, Badge } from "react-bootstrap";
 import type { PanoramaItem } from "@/lib/media-types";
 import { useThumbnail } from "@/lib/use-thumbnail";
+import { useEffect, useState } from "react";
+
+async function getPanoramaMode(item: PanoramaItem): Promise<string | null> {
+  const content = await item.htmlFile.text();
+  const doc = new DOMParser().parseFromString(content, "text/html");
+  const value = doc
+    .querySelector("meta[data-PANOMODE]")
+    ?.getAttribute("data-PANOMODE");
+  return value?.trim().toLocaleLowerCase() ?? null;
+}
+
+function usePanoramaMode(item: PanoramaItem): string | null {
+  const [panoramaMode, setPanoramaMode] = useState<string | null>(null);
+
+  useEffect(() => {
+    getPanoramaMode(item).then(setPanoramaMode);
+  }, [item]);
+
+  return panoramaMode;
+}
 
 export default function PanoramaCard({
   item,
@@ -13,6 +33,7 @@ export default function PanoramaCard({
   onClick: () => void;
 }) {
   const { url, ref } = useThumbnail(item.tiles[0]);
+  const panoramaMode = usePanoramaMode(item);
 
   return (
     <Card
@@ -40,7 +61,7 @@ export default function PanoramaCard({
           PANORAMA
         </Badge>
         <small className="text-muted">
-          {item.htmlFile.name} - {item.tiles.length} tiles
+          {item.htmlFile.name} {panoramaMode && `- ${panoramaMode}`}
         </small>
       </Card.Body>
     </Card>
