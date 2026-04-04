@@ -5,6 +5,13 @@ function titleCase(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function getRepoUrl(): string {
+  const owner = process.env.VERCEL_GIT_REPO_OWNER;
+  const slug = process.env.VERCEL_GIT_REPO_SLUG;
+
+  return `https://github.com/${owner}/${slug}`
+}
+
 export default function Footer() {
   return (
     <Container>
@@ -16,7 +23,7 @@ export default function Footer() {
 
         <div className="d-flex align-items-center">
           <a
-            href={process.env.NEXT_PUBLIC_REPO_URL}
+            href={getRepoUrl()}
             target="_blank"
             rel="noopener noreferrer"
             className="text-decoration-none text-white d-flex align-items-center me-3"
@@ -28,11 +35,6 @@ export default function Footer() {
           {process.env.VERCEL_ENV && (
             <Badge bg="secondary">{titleCase(process.env.VERCEL_ENV)}</Badge>
           )}
-          <ul>
-            <li>VERCEL_GIT_REPO_SLUG = {process.env.VERCEL_GIT_REPO_SLUG}</li>
-            <li>VERCEL_GIT_REPO_OWNER = {process.env.VERCEL_GIT_REPO_OWNER}</li>
-            <li>VERCEL_GIT_REPO_SLUG = {process.env.VERCEL_GIT_REPO_ID}</li>
-          </ul>
         </div>
       </footer>
     </Container>
