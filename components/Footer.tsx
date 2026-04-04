@@ -22,15 +22,11 @@ export default function Footer() {
             className="text-decoration-none text-white d-flex align-items-center me-3"
           >
             <Github size={25} className="me-1" />
-            <small>
-              {process.env.NEXT_PUBLIC_GIT_COMMIT_SHA?.substring(0, 7)}
-            </small>
+            <small>{process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7)}</small>
           </a>
 
-          {process.env.VERCEL_TARGET_ENV && (
-            <Badge bg="secondary">
-              {titleCase(process.env.VERCEL_TARGET_ENV)}
-            </Badge>
+          {process.env.VERCEL_ENV && (
+            <Badge bg="secondary">{titleCase(process.env.VERCEL_ENV)}</Badge>
           )}
         </div>
       </footer>
