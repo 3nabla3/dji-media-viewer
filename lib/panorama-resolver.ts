@@ -5,8 +5,10 @@
  * DJI writes: <meta http-equiv="refresh" content="0;url=../PANORAMA/100_0255/">
  */
 export function parsePanoramaRedirectUrl(html: string): string | null {
-  const match = html.match(/http-equiv=["']refresh["'][^>]*content=["'][^"']*;\s*url=([^"']+)/i)
-  return match ? match[1].trim() : null
+  const match = html.match(
+    /http-equiv=["']refresh["'][^>]*content=["'][^"']*;\s*url=([^"']+)/i,
+  );
+  return match ? match[1].trim() : null;
 }
 
 /**
@@ -15,16 +17,16 @@ export function parsePanoramaRedirectUrl(html: string): string | null {
  * Trailing slashes in `relative` are stripped from the result.
  */
 export function resolveRelativePath(baseDir: string, relative: string): string {
-  const parts = baseDir.split('/')
-  const relParts = relative.replace(/\/$/, '').split('/')
+  const parts = baseDir.split("/");
+  const relParts = relative.replace(/\/$/, "").split("/");
   for (const part of relParts) {
-    if (part === '..') {
-      parts.pop()
-    } else if (part !== '.') {
-      parts.push(part)
+    if (part === "..") {
+      parts.pop();
+    } else if (part !== ".") {
+      parts.push(part);
     }
   }
-  return parts.join('/')
+  return parts.join("/");
 }
 
 /**
@@ -36,17 +38,17 @@ export function resolveRelativePath(baseDir: string, relative: string): string {
 export function collectPanoramaTiles(
   htmlFile: File,
   htmlContent: string,
-  allFiles: File[]
+  allFiles: File[],
 ): File[] {
-  const redirectUrl = parsePanoramaRedirectUrl(htmlContent)
-  if (!redirectUrl) return []
+  const redirectUrl = parsePanoramaRedirectUrl(htmlContent);
+  if (!redirectUrl) return [];
 
-  const htmlPath = htmlFile.webkitRelativePath
-  const htmlDir = htmlPath.substring(0, htmlPath.lastIndexOf('/'))
-  const tileFolder = resolveRelativePath(htmlDir, redirectUrl)
+  const htmlPath = htmlFile.webkitRelativePath;
+  const htmlDir = htmlPath.substring(0, htmlPath.lastIndexOf("/"));
+  const tileFolder = resolveRelativePath(htmlDir, redirectUrl);
 
   return allFiles.filter((f) => {
-    const rel = f.webkitRelativePath
-    return rel.startsWith(tileFolder + '/')
-  })
+    const rel = f.webkitRelativePath;
+    return rel.startsWith(tileFolder + "/");
+  });
 }

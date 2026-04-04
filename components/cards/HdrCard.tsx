@@ -39,9 +39,7 @@ export default function HdrCard({
         <Badge bg="warning" text="dark" className="me-1">
           HDR
         </Badge>
-        <small className="text-muted">
-          {item.middle.name}
-        </small>
+        <small className="text-muted">{item.middle.name}</small>
       </Card.Body>
     </Card>
   );
