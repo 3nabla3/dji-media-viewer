@@ -91,7 +91,7 @@ function Gallery() {
   // ── Empty state ──────────────────────────────────────────────────────────
   if (!items && !loading) {
     return (
-      <Stack className="align-items-center justify-content-center vh-100">
+      <Stack className="align-items-center justify-content-center">
         <h1 className="mb-3">DJI Media Viewer</h1>
         <p className="text-muted mb-4">
           Select your drone SD card folder to get started.
@@ -117,7 +117,7 @@ function Gallery() {
   // ── Loading state ────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <Stack className="align-items-center justify-content-center vh-100">
+      <Stack className="align-items-center justify-content-center">
         <Spinner animation="border" variant="primary" className="mb-3" />
         <p className="text-muted">Reading media files…</p>
       </Stack>
@@ -127,7 +127,7 @@ function Gallery() {
   // ── Error state ──────────────────────────────────────────────────────────
   if (error) {
     return (
-      <Stack className="align-items-center justify-content-center vh-100">
+      <Stack className="align-items-center justify-content-center">
         <Alert variant="danger">{error}</Alert>
         <FolderPicker onFiles={handleFiles} />
       </Stack>
