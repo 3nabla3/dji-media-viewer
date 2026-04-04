@@ -1,27 +1,9 @@
 // components/cards/PanoramaCard.tsx
 "use client";
 
-import { Card, Badge, Row, Col } from "react-bootstrap";
+import { Card, Badge } from "react-bootstrap";
 import type { PanoramaItem } from "@/lib/media-types";
 import { useThumbnail } from "@/lib/use-thumbnail";
-
-function TileThumb({ file }: { file: File }) {
-  const { url } = useThumbnail(file);
-  return url ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={url}
-      alt=""
-      className="img-fluid"
-      style={{ height: "60px", objectFit: "cover", width: "100%" }}
-    />
-  ) : (
-    <div
-      className="bg-secondary-subtle"
-      style={{ height: "60px", width: "100%" }}
-    />
-  );
-}
 
 export default function PanoramaCard({
   item,
@@ -30,7 +12,7 @@ export default function PanoramaCard({
   item: PanoramaItem;
   onClick: () => void;
 }) {
-  const { ref } = useThumbnail(item.tiles[0]);
+  const { url, ref } = useThumbnail(item.tiles[0]);
 
   return (
     <Card
@@ -39,22 +21,27 @@ export default function PanoramaCard({
       style={{ cursor: "pointer" }}
       onClick={onClick}
     >
-      <Card.Header className="p-2">
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt={item.htmlFile.name}
+          className="card-img-top"
+          style={{ height: "200px", objectFit: "cover" }}
+        />
+      ) : (
+        <div
+          className="card-img-top bg-secondary-subtle"
+          style={{ height: "200px" }}
+        />
+      )}
+      <Card.Body className="p-2">
         <Badge bg="info" text="dark" className="me-1">
           PANORAMA
         </Badge>
         <small className="text-muted">
-          {item.htmlFile.name} · {item.tiles.length} tiles
+          {item.htmlFile.name} - {item.tiles.length} tiles
         </small>
-      </Card.Header>
-      <Card.Body className="p-2">
-        <Row xs={4} className="g-1">
-          {item.tiles.map((tile, i) => (
-            <Col key={i}>
-              <TileThumb file={tile} />
-            </Col>
-          ))}
-        </Row>
       </Card.Body>
     </Card>
   );
