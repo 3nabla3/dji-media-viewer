@@ -14,8 +14,6 @@ export default function ToastSection() {
             key={notif.id}
             bg={isError ? "danger" : "warning"}
             onClose={() => removeNotification(notif.id)}
-            autohide
-            delay={10000}
           >
             <ToastHeader>
               <strong className="me-auto">{notif.header}</strong>
