@@ -28,6 +28,11 @@ export default function Footer() {
           {process.env.VERCEL_ENV && (
             <Badge bg="secondary">{titleCase(process.env.VERCEL_ENV)}</Badge>
           )}
+          <ul>
+            <li>VERCEL_GIT_REPO_SLUG = {process.env.VERCEL_GIT_REPO_SLUG}</li>
+            <li>VERCEL_GIT_REPO_OWNER = {process.env.VERCEL_GIT_REPO_OWNER}</li>
+            <li>VERCEL_GIT_REPO_SLUG = {process.env.VERCEL_GIT_REPO_ID}</li>
+          </ul>
         </div>
       </footer>
     </Container>
