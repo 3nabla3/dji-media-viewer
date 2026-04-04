@@ -40,7 +40,7 @@ export default function HdrCard({
           HDR
         </Badge>
         <small className="text-muted">
-          {item.files.length} exposures · {item.middle.name}
+          {item.middle.name}
         </small>
       </Card.Body>
     </Card>
