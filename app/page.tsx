@@ -5,12 +5,12 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Stack, Alert, Spinner, Navbar, Container } from "react-bootstrap";
 import { parseMediaFiles } from "@/lib/media-parser";
-import Toast from "@/components/Toast";
 import { loadOpenCV } from "@/lib/opencv-hdr";
 import { useMediaContext } from "@/lib/media-context";
 import FolderPicker from "@/components/FolderPicker";
 import FilterTabs, { type FilterType } from "@/components/FilterTabs";
 import MediaGrid from "@/components/MediaGrid";
+import { useToastContext } from "@/lib/toast-context";
 
 const VALID_FILTERS = new Set<FilterType>([
   "all",
@@ -37,9 +37,9 @@ function Gallery() {
   const [folderName, setFolderName] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [warnings, setWarnings] = useState<string[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const {addNotification} = useToastContext();
 
   const tabParam = searchParams.get("tab");
   const [filter, setFilter] = useState<FilterType>(
@@ -67,20 +67,20 @@ function Gallery() {
     router.replace("/", { scroll: false });
     setLoading(true);
     setError(null);
-    setWarnings([]);
     try {
       const { items: parsed, warnings: parseWarnings } =
         await parseMediaFiles(files);
       console.log(parsed);
       setItems(parsed);
-      if (parseWarnings.length > 0) setWarnings(parseWarnings);
+      parseWarnings.forEach((w) =>
+        addNotification({ header: "Warning", message: w, severity: "warning" }),
+      );
       if (parsed.some((item) => item.type === "hdr")) {
         loadOpenCV().catch(() => {}); // preload WASM while user browses gallery
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to parse media files.",
-      );
+      if (err instanceof Error) setError(err.message);
+      else setError("Failed to parse media files.");
     } finally {
       setLoading(false);
     }
@@ -156,13 +156,6 @@ function Gallery() {
         />
         <MediaGrid items={items!} filter={filter} onSelect={handleSelect} />
       </Container>
-      {warnings.length > 0 && (
-        <Toast
-          messages={warnings}
-          variant="warning"
-          onDismiss={() => setWarnings([])}
-        />
-      )}
     </div>
   );
 }
