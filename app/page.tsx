@@ -59,8 +59,7 @@ function Gallery() {
   }
 
   async function handleFiles(files: File[]) {
-    console.log(files);
-    if (files.length === 0) return;
+     if (files.length === 0) return;
     const firstPath = files[0].webkitRelativePath;
     setFolderName(firstPath.split("/")[0] ?? "Unknown folder");
     setFilter("all");
@@ -70,7 +69,6 @@ function Gallery() {
     try {
       const { items: parsed, warnings: parseWarnings } =
         await parseMediaFiles(files);
-      console.log(parsed);
       setItems(parsed);
       parseWarnings.forEach((w) =>
         addNotification({ header: "Warning", message: w, severity: "warning" }),

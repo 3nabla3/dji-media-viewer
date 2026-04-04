@@ -12,7 +12,6 @@ export default function HdrCard({
   item: HdrItem;
   onClick: () => void;
 }) {
-  console.log(item);
   const { url, ref } = useThumbnail(item.middle);
 
   return (
