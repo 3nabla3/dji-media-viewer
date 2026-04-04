@@ -17,7 +17,6 @@ export default function HdrCard({
   return (
     <Card
       ref={ref}
-      border="warning"
       className="h-100"
       style={{ cursor: "pointer" }}
       onClick={onClick}
