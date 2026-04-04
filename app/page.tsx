@@ -4,6 +4,7 @@
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { parseMediaFiles } from '@/lib/media-parser'
+import Toast from '@/components/Toast'
 import { loadOpenCV } from '@/lib/opencv-hdr'
 import { useMediaContext } from '@/lib/media-context'
 import FolderPicker from '@/components/FolderPicker'
@@ -29,6 +30,7 @@ function Gallery() {
   const [folderName, setFolderName] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [warnings, setWarnings] = useState<string[]>([])
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -50,16 +52,20 @@ function Gallery() {
   }
 
   async function handleFiles(files: File[]) {
+    console.log(files);
     if (files.length === 0) return
-    const firstPath = (files[0] as File & { webkitRelativePath: string }).webkitRelativePath
+    const firstPath = files[0].webkitRelativePath
     setFolderName(firstPath.split('/')[0] ?? 'Unknown folder')
     setFilter('all')
     router.replace('/', { scroll: false })
     setLoading(true)
     setError(null)
+    setWarnings([])
     try {
-      const parsed = await parseMediaFiles(files)
+      const { items: parsed, warnings: parseWarnings } = await parseMediaFiles(files)
+      console.log(parsed)
       setItems(parsed)
+      if (parseWarnings.length > 0) setWarnings(parseWarnings)
       if (parsed.some((item) => item.type === 'hdr')) {
         loadOpenCV().catch(() => {}) // preload WASM while user browses gallery
       }
@@ -80,6 +86,14 @@ function Gallery() {
       <div className="d-flex flex-column align-items-center justify-content-center vh-100">
         <h1 className="mb-3">DJI Media Viewer</h1>
         <p className="text-muted mb-4">Select your drone SD card folder to get started.</p>
+        <div className="alert alert-info d-flex align-items-start gap-2 mb-4" style={{ maxWidth: 480 }}>
+          <span style={{ fontSize: '1.1rem' }}>🔒</span>
+          <div>
+            <strong>Your files never leave your device.</strong>
+            <br />
+            All image and video processing happens entirely in your browser. No data is uploaded or sent to any server.
+          </div>
+        </div>
         <FolderPicker onFiles={handleFiles} />
       </div>
     )
@@ -121,6 +135,13 @@ function Gallery() {
         <FilterTabs items={items!} active={filter} onChange={handleFilterChange} />
         <MediaGrid items={items!} filter={filter} onSelect={handleSelect} />
       </div>
+      {warnings.length > 0 && (
+        <Toast
+          messages={warnings}
+          variant="warning"
+          onDismiss={() => setWarnings([])}
+        />
+      )}
     </div>
   )
 }

@@ -41,12 +41,12 @@ export function collectPanoramaTiles(
   const redirectUrl = parsePanoramaRedirectUrl(htmlContent)
   if (!redirectUrl) return []
 
-  const htmlPath = (htmlFile as File & { webkitRelativePath: string }).webkitRelativePath
+  const htmlPath = htmlFile.webkitRelativePath
   const htmlDir = htmlPath.substring(0, htmlPath.lastIndexOf('/'))
   const tileFolder = resolveRelativePath(htmlDir, redirectUrl)
 
   return allFiles.filter((f) => {
-    const rel = (f as File & { webkitRelativePath: string }).webkitRelativePath
+    const rel = f.webkitRelativePath
     return rel.startsWith(tileFolder + '/')
   })
 }

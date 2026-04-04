@@ -5,6 +5,7 @@ import type { HdrItem } from '@/lib/media-types'
 import { useThumbnail } from '@/lib/use-thumbnail'
 
 export default function HdrCard({ item, onClick }: { item: HdrItem; onClick: () => void }) {
+  console.log(item);
   const { url, ref } = useThumbnail(item.middle)
 
   return (

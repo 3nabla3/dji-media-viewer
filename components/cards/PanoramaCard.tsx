@@ -5,6 +5,7 @@ import type { PanoramaItem } from '@/lib/media-types'
 import { useThumbnail } from '@/lib/use-thumbnail'
 
 function TileThumb({ file }: { file: File }) {
+  console.log(file);
   const { url } = useThumbnail(file)
   return url ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -16,6 +17,7 @@ function TileThumb({ file }: { file: File }) {
 
 export default function PanoramaCard({ item, onClick }: { item: PanoramaItem; onClick: () => void }) {
   // Use the first tile's ref to drive lazy loading for the whole card
+  console.log(item);
   const { ref } = useThumbnail(item.tiles[0])
 
   return (

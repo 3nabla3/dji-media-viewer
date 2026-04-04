@@ -24,8 +24,14 @@ function parseXpCommentType(raw: unknown): string | undefined {
   return match ? match[1].trim() : undefined
 }
 
-export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
+export interface ParseMediaResult {
+  items: MediaItem[]
+  warnings: string[]
+}
+
+export async function parseMediaFiles(files: File[]): Promise<ParseMediaResult> {
   const allFiles = Array.from(files)
+  const warnings: string[] = []
 
   // Partition by type
   const videos: File[] = []
@@ -67,10 +73,16 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
   })
 
   // Resolve panoramas — read HTML file text, find tiles
-  const panoramaItems = await Promise.all(
+  const panoramaResults = await Promise.all(
     htmls.map(async (htmlFile) => {
       const html = await htmlFile.text()
       const tiles = collectPanoramaTiles(htmlFile, html, allFiles)
+      if (tiles.length === 0) {
+        const msg = `Panorama skipped: no tile files found for "${htmlFile.name}"`
+        console.warn('[dji-media-viewer]', msg)
+        warnings.push(msg)
+        return null
+      }
       return {
         type: 'panorama' as const,
         htmlFile,
@@ -80,11 +92,13 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
     })
   )
 
+  const panoramaItems = panoramaResults.filter((p) => p !== null)
+
   // Collect file paths used as panorama tiles so we can exclude them from HDR logic
   const panoramaTilePaths = new Set(
     panoramaItems.flatMap((p) =>
       p.tiles.map(
-        (f) => (f as File & { webkitRelativePath: string }).webkitRelativePath
+        (f) => f.webkitRelativePath
       )
     )
   )
@@ -93,7 +107,7 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
   const nonTileJpgs = jpgsWithExif.filter(
     (item) =>
       !panoramaTilePaths.has(
-        (item.file as File & { webkitRelativePath: string }).webkitRelativePath
+        item.file.webkitRelativePath
       )
   )
 
@@ -105,5 +119,5 @@ export async function parseMediaFiles(files: File[]): Promise<MediaItem[]> {
     date: new Date(file.lastModified),
   }))
 
-  return [...videoItems, ...photoAndHdrItems, ...panoramaItems]
+  return { items: [...videoItems, ...photoAndHdrItems, ...panoramaItems], warnings }
 }
