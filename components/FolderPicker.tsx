@@ -1,17 +1,19 @@
-'use client'
+// components/FolderPicker.tsx
+"use client";
 
-import { useRef } from 'react'
+import { useRef } from "react";
+import { Button } from "react-bootstrap";
 
 interface FolderPickerProps {
-  onFiles: (files: File[]) => void
+  onFiles: (files: File[]) => void;
 }
 
 export default function FolderPicker({ onFiles }: FolderPickerProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files) {
-      onFiles(Array.from(e.target.files))
+      onFiles(Array.from(e.target.files));
     }
   }
 
@@ -27,12 +29,13 @@ export default function FolderPicker({ onFiles }: FolderPickerProps) {
         className="d-none"
         onChange={handleChange}
       />
-      <button
-        className="btn btn-primary btn-lg"
+      <Button
+        variant="primary"
+        size="lg"
         onClick={() => inputRef.current?.click()}
       >
         Open Folder
-      </button>
+      </Button>
     </>
-  )
+  );
 }
