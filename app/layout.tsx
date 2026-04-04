@@ -38,7 +38,7 @@ export default function RootLayout({
               className="text-decoration-none text-white"
             >
               <Github size={25} className="me-1" />
-              <i>{process.env.NEXT_PUBLIC_GIT_COMMIT_SHA}</i>
+              <i>{process.env.VERCEL_GIT_COMMIT_SHA}</i>
             </a>
           </footer>
         </Container>
