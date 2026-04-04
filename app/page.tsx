@@ -39,7 +39,7 @@ function Gallery() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const {addNotification} = useToastContext();
+  const { addNotification } = useToastContext();
 
   const tabParam = searchParams.get("tab");
   const [filter, setFilter] = useState<FilterType>(
@@ -59,7 +59,7 @@ function Gallery() {
   }
 
   async function handleFiles(files: File[]) {
-     if (files.length === 0) return;
+    if (files.length === 0) return;
     const firstPath = files[0].webkitRelativePath;
     setFolderName(firstPath.split("/")[0] ?? "Unknown folder");
     setFilter("all");

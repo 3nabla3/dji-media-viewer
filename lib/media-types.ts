@@ -1,15 +1,15 @@
 // lib/media-types.ts
 
 export interface VideoItem {
-  type: 'video'
-  file: File
-  date: Date
+  type: "video";
+  file: File;
+  date: Date;
 }
 
 export interface PhotoItem {
-  type: 'photo'
-  file: File
-  date: Date
+  type: "photo";
+  file: File;
+  date: Date;
 }
 
 /**
@@ -18,17 +18,17 @@ export interface PhotoItem {
  * by ExposureBiasValue. `date` is the capture time of the middle exposure.
  */
 export interface HdrItem {
-  type: 'hdr'
-  files: File[]
-  middle: File
-  date: Date
+  type: "hdr";
+  files: File[];
+  middle: File;
+  date: Date;
 }
 
 export interface PanoramaItem {
-  type: 'panorama'
-  htmlFile: File
-  tiles: File[]
-  date: Date
+  type: "panorama";
+  htmlFile: File;
+  tiles: File[];
+  date: Date;
 }
 
-export type MediaItem = VideoItem | PhotoItem | HdrItem | PanoramaItem
+export type MediaItem = VideoItem | PhotoItem | HdrItem | PanoramaItem;
