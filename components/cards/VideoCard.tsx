@@ -44,7 +44,7 @@ export default function VideoCard({
           src={url}
           preload="metadata"
           className="card-img-top"
-          style={{ maxHeight: "200px", objectFit: "cover" }}
+          style={{ height: "200px", objectFit: "cover" }}
         />
       ) : (
         <div
