@@ -2,7 +2,7 @@
 // NOTE: This module uses browser APIs (File, exifr). Call only from Client Components.
 import exifr from "exifr";
 import type { MediaItem, VideoItem } from "./media-types";
-import { collectPanoramaTiles } from "./panorama-resolver";
+import { collectPanoramaTiles, parsePanoramaMode } from "./panorama-resolver";
 import { groupIntoBrackets } from "./hdr-detector";
 import type { JpgWithExif } from "./hdr-detector";
 
@@ -92,6 +92,7 @@ export async function parseMediaFiles(
         type: "panorama" as const,
         htmlFile,
         tiles,
+        panoramaMode: parsePanoramaMode(html),
         date: new Date(htmlFile.lastModified),
       };
     }),

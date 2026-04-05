@@ -4,6 +4,7 @@ import {
   parsePanoramaRedirectUrl,
   resolveRelativePath,
   collectPanoramaTiles,
+  parsePanoramaMode,
 } from "../panorama-resolver";
 
 describe("parsePanoramaRedirectUrl", () => {
@@ -73,5 +74,24 @@ describe("collectPanoramaTiles", () => {
       });
     const htmlFile = makeFile("root/DJI_0255.html");
     expect(collectPanoramaTiles(htmlFile, "<html></html>", [])).toEqual([]);
+  });
+});
+
+describe("parsePanoramaMode", () => {
+  it("extracts and normalises BALL mode", () => {
+    const html = `<html><head>
+<meta http-equiv="refresh" content="0;url=../PANORAMA/100_0123/">
+<meta data-PANOMODE="BALL  ">
+</head></html>`;
+    expect(parsePanoramaMode(html)).toBe("ball");
+  });
+
+  it("extracts and normalises SECTOR mode", () => {
+    const html = `<meta data-PANOMODE="SECTOR">`;
+    expect(parsePanoramaMode(html)).toBe("sector");
+  });
+
+  it("returns empty string when no PANOMODE meta tag", () => {
+    expect(parsePanoramaMode("<html></html>")).toBe("");
   });
 });

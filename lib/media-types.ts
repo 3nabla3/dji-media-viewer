@@ -28,6 +28,7 @@ export interface PanoramaItem {
   type: "panorama";
   htmlFile: File;
   tiles: File[];
+  panoramaMode: string;
   date: Date;
 }
 

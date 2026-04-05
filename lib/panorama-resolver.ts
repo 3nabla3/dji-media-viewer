@@ -52,3 +52,13 @@ export function collectPanoramaTiles(
     return rel.startsWith(tileFolder + "/");
   });
 }
+
+/**
+ * Extracts the panorama mode from a DJI panorama HTML file.
+ * DJI writes: <meta data-PANOMODE="BALL  ">
+ * Returns the value trimmed and lowercased, or "" if not found.
+ */
+export function parsePanoramaMode(html: string): string {
+  const match = html.match(/data-PANOMODE=["']([^"']+)["']/i);
+  return match ? match[1].trim().toLowerCase() : "";
+}
