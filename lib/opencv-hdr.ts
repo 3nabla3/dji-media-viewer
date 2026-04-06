@@ -128,7 +128,7 @@ export async function renderHdr(files: File[]): Promise<Blob> {
 
   try {
     // Cap at 2048px on the longest side before passing to WASM.
-    // A 12MP image × 3 inputs + float32 intermediates exceeds the WASM heap.
+    // A 12MP image x 3 inputs + float32 intermediates exceeds the WASM heap.
     const MAX_DIM = 2048;
 
     for (const file of files) {
@@ -181,7 +181,8 @@ export async function renderHdr(files: File[]): Promise<Blob> {
     const blob = await new Promise<Blob>((resolve, reject) => {
       outputCanvas.toBlob(
         (b) => {
-          b ? resolve(b) : reject(new Error("canvas.toBlob returned null"));
+          if (b) resolve(b);
+          else reject(new Error("canvas.toBlob returned null"));
         },
         "image/jpeg",
         0.95,

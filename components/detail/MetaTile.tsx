@@ -8,7 +8,7 @@ interface MetaTileProps {
 
 export default function MetaTile({ label, value }: MetaTileProps) {
   return (
-    <Col xs={6} md={4} lg={3}>
+    <Col xs={6} md={4} lg={4}>
       <div className="rounded p-2">
         <div
           className="text-muted"

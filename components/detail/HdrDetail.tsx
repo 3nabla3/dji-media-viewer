@@ -2,37 +2,27 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import exifr from "exifr";
-import { Badge, Spinner, Toast, Container, Row, Col } from "react-bootstrap";
+import { Badge, Col, Row, Spinner, Toast } from "react-bootstrap";
 import type { HdrItem } from "@/lib/media-types";
-import { parseXpComment } from "@/lib/dji-xp-comment";
-import { formatBytes, formatDate, formatShutter } from "./format";
+import { type MediaExif, parseExif } from "./exif";
+import { formatBytes } from "./format";
 import DetailNav from "./DetailNav";
-import MetaTile from "./MetaTile";
+import ExifSections from "./ExifSections";
 import { renderHdr } from "@/lib/opencv-hdr";
 
-interface HdrExif {
-  dateTimeOriginal?: Date;
-  iso?: number;
-  fNumber?: number;
-  exposureTime?: number;
-  focalLength?: number;
-  gpsLatitude?: number;
-  gpsLongitude?: number;
-  gpsLatitudeRef?: string;
-  gpsLongitudeRef?: string;
-  xpComment?: string;
-}
-
 export default function HdrDetail({ item }: { item: HdrItem }) {
+  const middleIndex = item.files.findIndex((f) => f.name === item.middle.name);
+
   const [url, setUrl] = useState("");
-  const [exif, setExif] = useState<HdrExif>({});
+  const [exifList, setExifList] = useState<MediaExif[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState<number>(middleIndex);
   const [hdrRendering, setHdrRendering] = useState(false);
   const [hdrError, setHdrError] = useState(false);
   const mediaRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const previewUrl = URL.createObjectURL(item.middle);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUrl(previewUrl);
     setHdrRendering(true);
     setHdrError(false);
@@ -68,69 +58,8 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
   }, [item.files, item.middle]);
 
   useEffect(() => {
-    exifr
-      .parse(item.middle, {
-        pick: [
-          "DateTimeOriginal",
-          "ISO",
-          "FNumber",
-          "ExposureTime",
-          "FocalLength",
-          "GPSLatitude",
-          "GPSLongitude",
-          "GPSLatitudeRef",
-          "GPSLongitudeRef",
-          "XPComment",
-        ],
-      })
-      .then((data) => {
-        if (!data) return;
-        setExif({
-          dateTimeOriginal:
-            data.DateTimeOriginal instanceof Date
-              ? data.DateTimeOriginal
-              : undefined,
-          iso: typeof data.ISO === "number" ? data.ISO : undefined,
-          fNumber: typeof data.FNumber === "number" ? data.FNumber : undefined,
-          exposureTime:
-            typeof data.ExposureTime === "number"
-              ? data.ExposureTime
-              : undefined,
-          focalLength:
-            typeof data.FocalLength === "number" ? data.FocalLength : undefined,
-          gpsLatitude:
-            typeof data.GPSLatitude === "number" ? data.GPSLatitude : undefined,
-          gpsLongitude:
-            typeof data.GPSLongitude === "number"
-              ? data.GPSLongitude
-              : undefined,
-          gpsLatitudeRef:
-            typeof data.GPSLatitudeRef === "string"
-              ? data.GPSLatitudeRef
-              : undefined,
-          gpsLongitudeRef:
-            typeof data.GPSLongitudeRef === "string"
-              ? data.GPSLongitudeRef
-              : undefined,
-          xpComment:
-            typeof data.XPComment === "string" ? data.XPComment : undefined,
-        });
-      })
-      .catch(() => {});
-  }, [item.middle]);
-
-  const dji = parseXpComment(exif.xpComment);
-  const lat =
-    exif.gpsLatitude != null
-      ? `${exif.gpsLatitude.toFixed(4)}° ${exif.gpsLatitudeRef ?? ""}`
-      : "—";
-  const lng =
-    exif.gpsLongitude != null
-      ? `${exif.gpsLongitude.toFixed(4)}° ${exif.gpsLongitudeRef ?? ""}`
-      : "—";
-
-  const sorted = item.files; // already sorted ascending by ExposureBiasValue in hdr-detector.ts
-  const middleIndex = sorted.findIndex((f) => f.name === item.middle.name);
+    Promise.all(item.files.map(parseExif)).then(setExifList);
+  }, [item.files]);
 
   return (
     <div>
@@ -181,28 +110,33 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
         <Toast.Body>Showing middle exposure instead.</Toast.Body>
       </Toast>
 
-      <Container fluid className="py-4">
+      <div className="px-3 pt-4">
         <h6 className="text-uppercase text-muted mb-3">HDR Bracket Set</h6>
         <Row className="g-2 mb-4">
-          {sorted.map((f, i) => {
+          {item.files.map((f, i) => {
             const isMiddle = f.name === item.middle.name;
+            const isSelected = i === selectedIndex;
             const label = isMiddle
-              ? "Middle (preview)"
+              ? "Middle"
               : i < middleIndex
                 ? "Under-exposed"
                 : "Over-exposed";
-            const badgeBg = isMiddle
-              ? "success"
-              : i < middleIndex
-                ? "warning"
-                : "info";
-            const badgeText = isMiddle ? undefined : "dark";
             return (
               <Col key={i} xs={6} md={4}>
                 <div
-                  className={`border rounded p-2 ${isMiddle ? "border-success" : ""}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedIndex(i)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setSelectedIndex(i);
+                  }}
+                  className={`border rounded p-2 h-100 ${
+                    isSelected &&
+                    "border-primary border-2 bg-primary bg-opacity-10"
+                  }`}
+                  style={{ cursor: "pointer" }}
                 >
-                  <Badge bg={badgeBg} text={badgeText} className="mb-1">
+                  <Badge className="mb-1" bg="secondary">
                     {label}
                   </Badge>
                   <div className="small text-muted">{f.name}</div>
@@ -212,71 +146,14 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
             );
           })}
         </Row>
+      </div>
 
-        <h6 className="text-uppercase text-muted mb-3">
-          Camera Settings (middle exposure)
-        </h6>
-        <Row className="g-2 mb-4">
-          <MetaTile
-            label="Date Taken"
-            value={
-              exif.dateTimeOriginal ? formatDate(exif.dateTimeOriginal) : "—"
-            }
-          />
-          <MetaTile label="ISO" value={exif.iso?.toString() ?? "—"} />
-          <MetaTile
-            label="Aperture"
-            value={exif.fNumber != null ? `f/${exif.fNumber}` : "—"}
-          />
-          <MetaTile
-            label="Shutter"
-            value={
-              exif.exposureTime != null ? formatShutter(exif.exposureTime) : "—"
-            }
-          />
-          <MetaTile
-            label="Focal Length"
-            value={exif.focalLength != null ? `${exif.focalLength} mm` : "—"}
-          />
-        </Row>
-
-        <h6 className="text-uppercase text-muted mb-3">DJI Flight Data</h6>
-        <Row className="g-2">
-          <MetaTile label="GPS" value={`${lat}, ${lng}`} />
-          <MetaTile
-            label="Altitude (Abs)"
-            value={dji.AbsoluteAltitude ? `${dji.AbsoluteAltitude} m` : "—"}
-          />
-          <MetaTile
-            label="Altitude (Rel)"
-            value={dji.RelativeAltitude ? `${dji.RelativeAltitude} m` : "—"}
-          />
-          <MetaTile
-            label="Gimbal Pitch"
-            value={dji.GimbalPitchDegree ? `${dji.GimbalPitchDegree}°` : "—"}
-          />
-          <MetaTile
-            label="Gimbal Yaw"
-            value={dji.GimbalYawDegree ? `${dji.GimbalYawDegree}°` : "—"}
-          />
-          <MetaTile
-            label="Flight Yaw"
-            value={dji.FlightYawDegree ? `${dji.FlightYawDegree}°` : "—"}
-          />
-          <MetaTile
-            label="Gimbal Roll"
-            value={dji.GimbalRollDegree ? `${dji.GimbalRollDegree}°` : "—"}
-          />
-          <MetaTile
-            label="Flight Pitch"
-            value={dji.FlightPitchDegree ? `${dji.FlightPitchDegree}°` : "—"}
-          />
-          <MetaTile
-            label="Flight Roll"
-            value={dji.FlightRollDegree ? `${dji.FlightRollDegree}°` : "—"}
-          />
-        </Row>
-      </Container>
+      {exifList[selectedIndex] && (
+        <ExifSections
+          exif={exifList[selectedIndex]}
+          file={item.files[selectedIndex]}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,6 @@
 // components/detail/DetailNav.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar, Container, Button } from "react-bootstrap";
 import type { ReactNode } from "react";
@@ -18,29 +17,9 @@ export default function DetailNav({
   onFullscreen,
 }: DetailNavProps) {
   const router = useRouter();
-  const [visible, setVisible] = useState(true);
-  const lastScrollY = useRef(0);
-
-  useEffect(() => {
-    function onScroll() {
-      const y = window.scrollY;
-      if (y > lastScrollY.current + 5) setVisible(false);
-      else if (y < lastScrollY.current - 5) setVisible(true);
-      lastScrollY.current = y;
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
-    <Navbar
-      bg="dark"
-      className="border-bottom sticky-top"
-      style={{
-        transform: visible ? "none" : "translateY(-100%)",
-        transition: "transform 0.3s ease",
-      }}
-    >
+    <Navbar bg="dark" className="border-bottom sticky-top">
       <Container fluid>
         <Button
           variant="outline-secondary"

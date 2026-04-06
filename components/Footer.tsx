@@ -9,7 +9,7 @@ function getRepoUrl(): string {
   const owner = process.env.VERCEL_GIT_REPO_OWNER;
   const slug = process.env.VERCEL_GIT_REPO_SLUG;
 
-  return `https://github.com/${owner}/${slug}`
+  return `https://github.com/${owner}/${slug}`;
 }
 
 export default function Footer() {
