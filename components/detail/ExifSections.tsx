@@ -31,7 +31,7 @@ export default function ExifSections({ exif, file }: ExifSectionsProps) {
           label="Dimensions"
           value={
             exif.imageWidth != null && exif.imageHeight != null
-              ? `${exif.imageWidth} × ${exif.imageHeight}`
+              ? `${exif.imageWidth} x ${exif.imageHeight}`
               : "—"
           }
         />

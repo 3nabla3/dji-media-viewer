@@ -2,25 +2,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Badge, Container, Row } from "react-bootstrap";
+import { Badge, Container, Row, Toast } from "react-bootstrap";
 import type { VideoItem } from "@/lib/media-types";
 import { formatBytes, formatDate } from "./format";
 import DetailNav from "./DetailNav";
 import MetaTile from "./MetaTile";
-
-interface VideoMeta {
-  duration?: number;
-  width?: number;
-  height?: number;
-}
-
-interface Mp4Meta {
-  videoCodec?: string;
-  audioCodec?: string;
-  frameRate?: number;
-  bitrate?: number;
-  creationTime?: Date;
-}
+import * as MP4Box from "mp4box";
+import { MP4Info } from "mp4box";
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -34,11 +22,69 @@ function formatAspectRatio(w: number, h: number): string {
   return `${w / d}:${h / d}`;
 }
 
+/// patch the console error method to avoid annoying error that nextjs
+/// picks up on
+function patchMp4boxErrors() {
+  const originalErr = console.error;
+
+  console.error = (...args) => {
+    if (typeof args[0] === "string" && args[1].includes("[BoxParser]")) {
+      return;
+    }
+    originalErr(...args);
+  };
+
+  return () => {
+    console.error = originalErr;
+  };
+}
+
+async function readMetadata(file: File): Promise<MP4Box.MP4Info> {
+  const CHUNK = 4 * 1024 * 1024; // 4 MiB
+
+  // DJI (and most cameras) write moov at the end of the file.
+  // Append first chunk (ftyp/mdat start) + last chunk (moov) so mp4box
+  // can resolve without reading the full file.
+  const slices: { start: number; end: number }[] = [{ start: 0, end: CHUNK }];
+  if (file.size > CHUNK * 2) {
+    slices.push({ start: file.size - CHUNK, end: file.size });
+  }
+
+  const buffers = await Promise.all(
+    slices.map(async ({ start, end }) => {
+      const ab = await file.slice(start, end).arrayBuffer() as ArrayBuffer & { fileStart: number };
+      ab.fileStart = start;
+      return ab;
+    })
+  );
+
+  const mp4box = MP4Box.createFile();
+
+  return new Promise((resolve, reject) => {
+    mp4box.onReady = resolve;
+    mp4box.onError = reject;
+
+    for (const buf of buffers) {
+      mp4box.appendBuffer(buf);
+    }
+    mp4box.flush();
+  });
+}
+
+export function getFrameRate(info: MP4Info): number | null {
+  const track = info.videoTracks?.[0];
+  if (!track) return null;
+
+  const { nb_samples, duration, timescale } = track;
+  if (!nb_samples || !duration || !timescale) return null;
+
+  return (nb_samples * timescale) / duration;
+}
+
 export default function VideoDetail({ item }: { item: VideoItem }) {
   const [url, setUrl] = useState("");
-  const [videoMeta, setVideoMeta] = useState<VideoMeta>({});
-  const [mp4Meta, setMp4Meta] = useState<Mp4Meta>({});
-  const [mp4Error, setMp4Error] = useState(false);
+  const [videoMeta, setVideoMeta] = useState<MP4Box.MP4Info>();
+  const [parseError, setParseError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -47,57 +93,26 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
     return () => URL.revokeObjectURL(objectUrl);
   }, [item.file]);
 
-  // Parse mp4box metadata from the first 1 MB of the file
   useEffect(() => {
+    const restore = patchMp4boxErrors();
     let cancelled = false;
-    async function parseMp4() {
-      try {
-        const MP4Box = await import("mp4box");
-        const mp4File = MP4Box.createFile();
 
-        await new Promise<void>((resolve, reject) => {
-          mp4File.onReady = (info) => {
-            if (cancelled) return;
-            const vt = info.videoTracks?.[0];
-            const at = info.audioTracks?.[0];
-            const fps =
-              vt && vt.timescale > 0
-                ? Math.round(
-                    (vt.nb_samples / (vt.duration / vt.timescale)) * 100,
-                  ) / 100
-                : undefined;
-            setMp4Meta({
-              videoCodec: vt?.codec,
-              audioCodec: at?.codec,
-              frameRate: fps,
-              bitrate: vt ? Math.round(vt.bitrate / 1_000_000) : undefined,
-              creationTime:
-                info.created instanceof Date ? info.created : undefined,
-            });
-            resolve();
-          };
-          mp4File.onError = (e) => reject(new Error(e));
+    readMetadata(item.file)
+      .then((metadata) => {
+        if (!cancelled) setVideoMeta(metadata);
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!cancelled) setParseError(true);
+      });
 
-          const CHUNK = 1024 * 1024;
-          item.file
-            .slice(0, CHUNK)
-            .arrayBuffer()
-            .then((buf) => {
-              const buffer = buf as ArrayBuffer & { fileStart: number };
-              buffer.fileStart = 0;
-              mp4File.appendBuffer(buffer);
-              mp4File.flush();
-            });
-        });
-      } catch {
-        if (!cancelled) setMp4Error(true);
-      }
-    }
-    parseMp4();
     return () => {
       cancelled = true;
+      restore();
     };
   }, [item.file]);
+
+  const videoTrack = videoMeta?.videoTracks[0];
 
   return (
     <div>
@@ -107,23 +122,19 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
         onFullscreen={() => videoRef.current?.requestFullscreen()}
       />
 
-      {url && (
-        <video
-          ref={videoRef}
-          src={url}
-          controls
-          className="w-100"
-          onLoadedMetadata={() => {
-            const v = videoRef.current;
-            if (!v) return;
-            setVideoMeta({
-              duration: v.duration,
-              width: v.videoWidth,
-              height: v.videoHeight,
-            });
-          }}
-        />
-      )}
+      {url && <video ref={videoRef} src={url} controls className="w-100" />}
+
+      <Toast
+        show={parseError}
+        onClose={() => setParseError(false)}
+        className="position-fixed top-0 end-0 m-3"
+        style={{ zIndex: 1100 }}
+      >
+        <Toast.Header>
+          <strong className="me-auto text-danger">Metadata Parse Failed</strong>
+        </Toast.Header>
+        <Toast.Body>Could not read video metadata.</Toast.Body>
+      </Toast>
 
       <Container fluid className="py-4">
         <h6 className="text-uppercase text-muted mb-3">File Info</h6>
@@ -131,12 +142,8 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
           <MetaTile label="Filename" value={item.file.name} />
           <MetaTile label="File Size" value={formatBytes(item.file.size)} />
           <MetaTile
-            label="Last Modified"
-            value={
-              item.file.lastModified
-                ? formatDate(new Date(item.file.lastModified))
-                : "—"
-            }
+            label="Date Taken"
+            value={videoMeta?.created ? formatDate(videoMeta.created) : "—"}
           />
         </Row>
 
@@ -144,54 +151,35 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
         <Row className="g-2 mb-4">
           <MetaTile
             label="Duration"
-            value={
-              videoMeta.duration != null
-                ? formatDuration(videoMeta.duration)
-                : "—"
-            }
+            value={videoMeta?.duration != null ? formatDuration(videoMeta.duration / 1000) : "—"}
           />
           <MetaTile
             label="Resolution"
             value={
-              videoMeta.width && videoMeta.height
-                ? `${videoMeta.width} × ${videoMeta.height}`
+              videoTrack?.video.width && videoTrack?.video.height
+                ? `${videoTrack.video.width} x ${videoTrack.video.height}`
                 : "—"
             }
           />
           <MetaTile
             label="Aspect Ratio"
             value={
-              videoMeta.width && videoMeta.height
-                ? formatAspectRatio(videoMeta.width, videoMeta.height)
+              videoTrack?.video.width && videoTrack?.video.height
+                ? formatAspectRatio(videoTrack.video.width, videoTrack.video.height)
                 : "—"
             }
           />
         </Row>
 
-        <h6 className="text-uppercase text-muted mb-3">
-          Container &amp; Codec
-          {mp4Error && (
-            <Badge bg="secondary" className="ms-2 text-lowercase fw-normal">
-              unavailable
-            </Badge>
-          )}
-        </h6>
         <Row className="g-2">
-          <MetaTile label="Video Codec" value={mp4Meta.videoCodec ?? "—"} />
+          <MetaTile label="Video Codec" value={videoTrack?.codec ?? "—"} />
           <MetaTile
             label="Frame Rate"
-            value={mp4Meta.frameRate != null ? `${mp4Meta.frameRate} fps` : "—"}
+            value={videoTrack && videoMeta ? `${getFrameRate(videoMeta)?.toFixed(2)} fps` : "—"}
           />
           <MetaTile
             label="Bitrate"
-            value={mp4Meta.bitrate != null ? `${mp4Meta.bitrate} Mbps` : "—"}
-          />
-          <MetaTile label="Audio Codec" value={mp4Meta.audioCodec ?? "—"} />
-          <MetaTile
-            label="Creation Time"
-            value={
-              mp4Meta.creationTime ? formatDate(mp4Meta.creationTime) : "—"
-            }
+            value={videoTrack?.bitrate != null ? `${(videoTrack.bitrate / 1_000_000).toFixed(2)} Mbps` : "—"}
           />
         </Row>
       </Container>
