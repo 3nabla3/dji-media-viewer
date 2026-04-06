@@ -63,7 +63,7 @@ function Gallery() {
   }
 
   return (
-    <div>
+    <div className="w-100">
       <Navbar className="border-bottom mb-4">
         <Container fluid>
           <Navbar.Brand className="mb-0 h1">DJI Media Viewer</Navbar.Brand>
