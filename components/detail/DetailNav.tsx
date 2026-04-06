@@ -1,7 +1,6 @@
 // components/detail/DetailNav.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar, Container, Button } from "react-bootstrap";
 import type { ReactNode } from "react";

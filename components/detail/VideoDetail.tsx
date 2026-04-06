@@ -91,6 +91,7 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
 
   useEffect(() => {
     const objectUrl = URL.createObjectURL(item.file);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
   }, [item.file]);

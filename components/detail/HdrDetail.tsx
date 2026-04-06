@@ -22,6 +22,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
 
   useEffect(() => {
     const previewUrl = URL.createObjectURL(item.middle);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUrl(previewUrl);
     setHdrRendering(true);
     setHdrError(false);
@@ -59,10 +60,6 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
   useEffect(() => {
     Promise.all(item.files.map(parseExif)).then(setExifList);
   }, [item.files]);
-
-  useEffect(() => {
-    setSelectedIndex(middleIndex);
-  }, [item, middleIndex]);
 
   return (
     <div>
@@ -134,11 +131,8 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
                     if (e.key === "Enter" || e.key === " ") setSelectedIndex(i);
                   }}
                   className={`border rounded p-2 h-100 ${
-                    isSelected
-                      ? "border-primary border-2 bg-primary bg-opacity-10"
-                      : isMiddle
-                        ? "border-success"
-                        : ""
+                    isSelected &&
+                    "border-primary border-2 bg-primary bg-opacity-10"
                   }`}
                   style={{ cursor: "pointer" }}
                 >

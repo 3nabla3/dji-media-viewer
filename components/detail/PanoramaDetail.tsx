@@ -14,6 +14,7 @@ export default function PanoramaDetail({ item }: { item: PanoramaItem }) {
 
   useEffect(() => {
     const objectUrl = URL.createObjectURL(item.htmlFile);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIframeUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
   }, [item.htmlFile]);

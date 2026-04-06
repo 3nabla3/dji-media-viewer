@@ -15,6 +15,7 @@ export default function PhotoDetail({ item }: { item: PhotoItem }) {
 
   useEffect(() => {
     const objectUrl = URL.createObjectURL(item.file);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
   }, [item.file]);

@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { groupIntoBrackets } from "../hdr-detector";
 import type { JpgWithExif } from "../hdr-detector";
-import type { PhotoItem, HdrItem } from "../media-types";
+import type { HdrItem } from "../media-types";
 
 function makeJpg(
   name: string,

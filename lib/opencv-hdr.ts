@@ -181,7 +181,8 @@ export async function renderHdr(files: File[]): Promise<Blob> {
     const blob = await new Promise<Blob>((resolve, reject) => {
       outputCanvas.toBlob(
         (b) => {
-          b ? resolve(b) : reject(new Error("canvas.toBlob returned null"));
+          if (b) resolve(b);
+          else reject(new Error("canvas.toBlob returned null"));
         },
         "image/jpeg",
         0.95,
