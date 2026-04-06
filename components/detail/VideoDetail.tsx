@@ -52,10 +52,12 @@ async function readMetadata(file: File): Promise<MP4Box.MP4Info> {
 
   const buffers = await Promise.all(
     slices.map(async ({ start, end }) => {
-      const ab = await file.slice(start, end).arrayBuffer() as ArrayBuffer & { fileStart: number };
+      const ab = (await file.slice(start, end).arrayBuffer()) as ArrayBuffer & {
+        fileStart: number;
+      };
       ab.fileStart = start;
       return ab;
-    })
+    }),
   );
 
   const mp4box = MP4Box.createFile();
@@ -151,7 +153,11 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
         <Row className="g-2 mb-4">
           <MetaTile
             label="Duration"
-            value={videoMeta?.duration != null ? formatDuration(videoMeta.duration / 1000) : "—"}
+            value={
+              videoMeta?.duration != null
+                ? formatDuration(videoMeta.duration / 1000)
+                : "—"
+            }
           />
           <MetaTile
             label="Resolution"
@@ -165,7 +171,10 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
             label="Aspect Ratio"
             value={
               videoTrack?.video.width && videoTrack?.video.height
-                ? formatAspectRatio(videoTrack.video.width, videoTrack.video.height)
+                ? formatAspectRatio(
+                    videoTrack.video.width,
+                    videoTrack.video.height,
+                  )
                 : "—"
             }
           />
@@ -175,11 +184,19 @@ export default function VideoDetail({ item }: { item: VideoItem }) {
           <MetaTile label="Video Codec" value={videoTrack?.codec ?? "—"} />
           <MetaTile
             label="Frame Rate"
-            value={videoTrack && videoMeta ? `${getFrameRate(videoMeta)?.toFixed(2)} fps` : "—"}
+            value={
+              videoTrack && videoMeta
+                ? `${getFrameRate(videoMeta)?.toFixed(2)} fps`
+                : "—"
+            }
           />
           <MetaTile
             label="Bitrate"
-            value={videoTrack?.bitrate != null ? `${(videoTrack.bitrate / 1_000_000).toFixed(2)} Mbps` : "—"}
+            value={
+              videoTrack?.bitrate != null
+                ? `${(videoTrack.bitrate / 1_000_000).toFixed(2)} Mbps`
+                : "—"
+            }
           />
         </Row>
       </Container>
