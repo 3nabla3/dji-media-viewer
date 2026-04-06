@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import exifr from "exifr";
 import { Badge, Spinner, Toast, Container, Row, Col } from "react-bootstrap";
 import type { HdrItem } from "@/lib/media-types";
-import { parseXpComment } from "@/lib/dji-xp-comment";
 import { formatBytes, formatDate, formatShutter } from "./format";
 import DetailNav from "./DetailNav";
 import MetaTile from "./MetaTile";
@@ -17,11 +16,18 @@ interface HdrExif {
   fNumber?: number;
   exposureTime?: number;
   focalLength?: number;
-  gpsLatitude?: number;
-  gpsLongitude?: number;
+  latitude?: number;
+  longitude?: number;
   gpsLatitudeRef?: string;
   gpsLongitudeRef?: string;
-  xpComment?: string;
+  absoluteAltitude?: number;
+  relativeAltitude?: number;
+  gimbalRollDegree?: number;
+  gimbalYawDegree?: number;
+  gimbalPitchDegree?: number;
+  flightRollDegree?: number;
+  flightYawDegree?: number;
+  flightPitchDegree?: number;
 }
 
 export default function HdrDetail({ item }: { item: HdrItem }) {
@@ -69,20 +75,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
 
   useEffect(() => {
     exifr
-      .parse(item.middle, {
-        pick: [
-          "DateTimeOriginal",
-          "ISO",
-          "FNumber",
-          "ExposureTime",
-          "FocalLength",
-          "GPSLatitude",
-          "GPSLongitude",
-          "GPSLatitudeRef",
-          "GPSLongitudeRef",
-          "XPComment",
-        ],
-      })
+      .parse(item.middle, { xmp: true })
       .then((data) => {
         if (!data) return;
         setExif({
@@ -98,12 +91,10 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
               : undefined,
           focalLength:
             typeof data.FocalLength === "number" ? data.FocalLength : undefined,
-          gpsLatitude:
-            typeof data.GPSLatitude === "number" ? data.GPSLatitude : undefined,
-          gpsLongitude:
-            typeof data.GPSLongitude === "number"
-              ? data.GPSLongitude
-              : undefined,
+          latitude:
+            typeof data.latitude === "number" ? data.latitude : undefined,
+          longitude:
+            typeof data.longitude === "number" ? data.longitude : undefined,
           gpsLatitudeRef:
             typeof data.GPSLatitudeRef === "string"
               ? data.GPSLatitudeRef
@@ -112,21 +103,50 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
             typeof data.GPSLongitudeRef === "string"
               ? data.GPSLongitudeRef
               : undefined,
-          xpComment:
-            typeof data.XPComment === "string" ? data.XPComment : undefined,
+          absoluteAltitude:
+            typeof data.AbsoluteAltitude === "number"
+              ? data.AbsoluteAltitude
+              : undefined,
+          relativeAltitude:
+            typeof data.RelativeAltitude === "number"
+              ? data.RelativeAltitude
+              : undefined,
+          gimbalRollDegree:
+            typeof data.GimbalRollDegree === "number"
+              ? data.GimbalRollDegree
+              : undefined,
+          gimbalYawDegree:
+            typeof data.GimbalYawDegree === "number"
+              ? data.GimbalYawDegree
+              : undefined,
+          gimbalPitchDegree:
+            typeof data.GimbalPitchDegree === "number"
+              ? data.GimbalPitchDegree
+              : undefined,
+          flightRollDegree:
+            typeof data.FlightRollDegree === "number"
+              ? data.FlightRollDegree
+              : undefined,
+          flightYawDegree:
+            typeof data.FlightYawDegree === "number"
+              ? data.FlightYawDegree
+              : undefined,
+          flightPitchDegree:
+            typeof data.FlightPitchDegree === "number"
+              ? data.FlightPitchDegree
+              : undefined,
         });
       })
       .catch(() => {});
   }, [item.middle]);
 
-  const dji = parseXpComment(exif.xpComment);
   const lat =
-    exif.gpsLatitude != null
-      ? `${exif.gpsLatitude.toFixed(4)}° ${exif.gpsLatitudeRef ?? ""}`
+    exif.latitude != null
+      ? `${exif.latitude.toFixed(4)}° ${exif.gpsLatitudeRef ?? ""}`
       : "—";
   const lng =
-    exif.gpsLongitude != null
-      ? `${exif.gpsLongitude.toFixed(4)}° ${exif.gpsLongitudeRef ?? ""}`
+    exif.longitude != null
+      ? `${exif.longitude.toFixed(4)}° ${exif.gpsLongitudeRef ?? ""}`
       : "—";
 
   const sorted = item.files; // already sorted ascending by ExposureBiasValue in hdr-detector.ts
@@ -245,35 +265,55 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
           <MetaTile label="GPS" value={`${lat}, ${lng}`} />
           <MetaTile
             label="Altitude (Abs)"
-            value={dji.AbsoluteAltitude ? `${dji.AbsoluteAltitude} m` : "—"}
+            value={
+              exif.absoluteAltitude != null ? `${exif.absoluteAltitude} m` : "—"
+            }
           />
           <MetaTile
             label="Altitude (Rel)"
-            value={dji.RelativeAltitude ? `${dji.RelativeAltitude} m` : "—"}
+            value={
+              exif.relativeAltitude != null ? `${exif.relativeAltitude} m` : "—"
+            }
           />
           <MetaTile
             label="Gimbal Pitch"
-            value={dji.GimbalPitchDegree ? `${dji.GimbalPitchDegree}°` : "—"}
+            value={
+              exif.gimbalPitchDegree != null
+                ? `${exif.gimbalPitchDegree}°`
+                : "—"
+            }
           />
           <MetaTile
             label="Gimbal Yaw"
-            value={dji.GimbalYawDegree ? `${dji.GimbalYawDegree}°` : "—"}
+            value={
+              exif.gimbalYawDegree != null ? `${exif.gimbalYawDegree}°` : "—"
+            }
           />
           <MetaTile
             label="Flight Yaw"
-            value={dji.FlightYawDegree ? `${dji.FlightYawDegree}°` : "—"}
+            value={
+              exif.flightYawDegree != null ? `${exif.flightYawDegree}°` : "—"
+            }
           />
           <MetaTile
             label="Gimbal Roll"
-            value={dji.GimbalRollDegree ? `${dji.GimbalRollDegree}°` : "—"}
+            value={
+              exif.gimbalRollDegree != null ? `${exif.gimbalRollDegree}°` : "—"
+            }
           />
           <MetaTile
             label="Flight Pitch"
-            value={dji.FlightPitchDegree ? `${dji.FlightPitchDegree}°` : "—"}
+            value={
+              exif.flightPitchDegree != null
+                ? `${exif.flightPitchDegree}°`
+                : "—"
+            }
           />
           <MetaTile
             label="Flight Roll"
-            value={dji.FlightRollDegree ? `${dji.FlightRollDegree}°` : "—"}
+            value={
+              exif.flightRollDegree != null ? `${exif.flightRollDegree}°` : "—"
+            }
           />
         </Row>
       </Container>
