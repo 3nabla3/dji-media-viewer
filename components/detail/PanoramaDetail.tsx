@@ -24,7 +24,7 @@ export default function PanoramaDetail({ item }: { item: PanoramaItem }) {
   );
 
   return (
-    <div>
+    <div className="w-100">
       <DetailNav
         filename={item.htmlFile.name}
         badge={
