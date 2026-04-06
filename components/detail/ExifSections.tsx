@@ -23,7 +23,9 @@ export default function ExifSections({ exif, file }: ExifSectionsProps) {
         <MetaTile label="File Size" value={formatBytes(file.size)} />
         <MetaTile
           label="Date Taken"
-          value={exif.dateTimeOriginal ? formatDate(exif.dateTimeOriginal) : "—"}
+          value={
+            exif.dateTimeOriginal ? formatDate(exif.dateTimeOriginal) : "—"
+          }
         />
         <MetaTile
           label="Dimensions"

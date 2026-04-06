@@ -120,16 +120,10 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
             const isMiddle = f.name === item.middle.name;
             const isSelected = i === selectedIndex;
             const label = isMiddle
-              ? "Middle (preview)"
+              ? "Middle"
               : i < middleIndex
                 ? "Under-exposed"
                 : "Over-exposed";
-            const badgeBg = isMiddle
-              ? "success"
-              : i < middleIndex
-                ? "warning"
-                : "info";
-            const badgeText = isMiddle ? undefined : "dark";
             return (
               <Col key={i} xs={6} md={4}>
                 <div
@@ -148,7 +142,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
                   }`}
                   style={{ cursor: "pointer" }}
                 >
-                  <Badge bg={badgeBg} text={badgeText} className="mb-1">
+                  <Badge className="mb-1" bg="secondary">
                     {label}
                   </Badge>
                   <div className="small text-muted">{f.name}</div>

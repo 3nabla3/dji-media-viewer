@@ -46,8 +46,7 @@ export async function parseExif(file: File): Promise<MediaExif> {
         typeof data.ExposureTime === "number" ? data.ExposureTime : undefined,
       focalLength:
         typeof data.FocalLength === "number" ? data.FocalLength : undefined,
-      latitude:
-        typeof data.latitude === "number" ? data.latitude : undefined,
+      latitude: typeof data.latitude === "number" ? data.latitude : undefined,
       longitude:
         typeof data.longitude === "number" ? data.longitude : undefined,
       gpsLatitudeRef:
