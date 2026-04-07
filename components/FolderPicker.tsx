@@ -5,10 +5,14 @@ import { useRef } from "react";
 import { Button } from "react-bootstrap";
 
 interface FolderPickerProps {
+  buttonText: string;
   onFiles: (files: File[]) => void;
 }
 
-export default function FolderPicker({ onFiles }: FolderPickerProps) {
+export default function FolderPicker({
+  buttonText,
+  onFiles,
+}: FolderPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -34,7 +38,7 @@ export default function FolderPicker({ onFiles }: FolderPickerProps) {
         size="lg"
         onClick={() => inputRef.current?.click()}
       >
-        Open Folder
+        {buttonText}
       </Button>
     </>
   );

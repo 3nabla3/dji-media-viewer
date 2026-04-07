@@ -53,31 +53,46 @@ export default function SelectPage() {
     return (
       <Stack className="align-items-center justify-content-center">
         <Alert variant="danger">{error}</Alert>
-        <FolderPicker onFiles={handleFiles} />
+        <FolderPicker buttonText="Open SD Card" onFiles={handleFiles} />
       </Stack>
     );
   }
 
   return (
-    <Stack className="align-items-center justify-content-center">
-      <h1 className="mb-3">DJI Media Viewer</h1>
+    <Stack
+      className="align-items-center justify-content-center"
+      style={{ maxWidth: 480, margin: "0 auto" }}
+    >
+      <h1 className="mb-1">DJI Media Viewer</h1>
       <p className="text-muted mb-4">
-        Select your drone SD card folder to get started.
+        Browse and filter photos &amp; videos from your DJI drone.
       </p>
+
       <Alert
         variant="info"
-        className="d-flex align-items-start gap-2 mb-4"
-        style={{ maxWidth: 480 }}
+        className="d-flex align-items-start gap-2 mb-3 w-100"
       >
-        <span style={{ fontSize: "1.1rem" }}>🔒</span>
+        <span>🔒</span>
         <div>
           <strong>Your files never leave your device.</strong>
           <br />
-          All image and video processing happens entirely in your browser. No
-          data is uploaded or sent to any server.
+          All processing happens entirely in your browser — nothing is uploaded
+          or sent to any server.
         </div>
       </Alert>
-      <FolderPicker onFiles={handleFiles} />
+
+      <Alert
+        variant="secondary"
+        className="d-flex align-items-start gap-2 mb-4 w-100"
+      >
+        <span>💡</span>
+        <div>
+          For best results, select the <strong>root of your SD card</strong>{" "}
+          rather than a subfolder. This ensures all media and metadata files are
+          found.
+        </div>
+      </Alert>
+      <FolderPicker buttonText="Open SD card" onFiles={handleFiles} />
     </Stack>
   );
 }
