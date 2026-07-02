@@ -1,6 +1,12 @@
 // lib/date-sections.ts
 import type { MediaItem } from "./media-types";
 
+// TODO: breaking change — VideoItem.date removed; video items fall back to epoch when timestamp is null
+function getItemDate(item: MediaItem): Date {
+  if (item.type === "video") return item.metadata.timestamp ?? new Date(0);
+  return item.date;
+}
+
 export interface DateSection {
   label: "Today" | "This Week" | "This Month" | "This Year" | "Others";
   items: { item: MediaItem; idx: number }[];
@@ -49,7 +55,7 @@ export function groupByDate(
   >(SECTION_ORDER.map((label) => [label, []]));
 
   for (const entry of items) {
-    const d = entry.item.date;
+    const d = getItemDate(entry.item);
     const year = d.getFullYear();
     const month = d.getMonth();
     const day = d.getDate();
@@ -74,7 +80,9 @@ export function groupByDate(
   for (const label of SECTION_ORDER) {
     const sectionItems = buckets.get(label)!;
     if (sectionItems.length === 0) continue;
-    sectionItems.sort((a, b) => b.item.date.getTime() - a.item.date.getTime());
+    sectionItems.sort(
+      (a, b) => getItemDate(b.item).getTime() - getItemDate(a.item).getTime(),
+    );
     result.push({ label, items: sectionItems });
   }
   return result;

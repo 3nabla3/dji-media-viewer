@@ -1,7 +1,7 @@
 // lib/media-parser.ts
 // NOTE: This module uses browser APIs (File, exifr). Call only from Client Components.
 import exifr from "exifr";
-import type { MediaItem, VideoItem } from "./media-types";
+import type { MediaItem } from "./media-types";
 import { collectPanoramaTiles } from "./panorama-resolver";
 import { groupIntoBrackets } from "./hdr-detector";
 import type { JpgWithExif } from "./hdr-detector";
@@ -111,11 +111,9 @@ export async function parseMediaFiles(
 
   const photoAndHdrItems = groupIntoBrackets(nonTileJpgs);
 
-  const videoItems: VideoItem[] = videos.map((file) => ({
-    type: "video",
-    file,
-    date: new Date(file.lastModified),
-  }));
+  // TODO: breaking change — VideoItem no longer has .date; VideoItem now requires metadata: VideoMetadata
+  // Orchestration will be updated in a follow-up phase to call parseVideoMetadata for each video file
+  const videoItems: MediaItem[] = [];
 
   return {
     items: [...videoItems, ...photoAndHdrItems, ...panoramaItems],

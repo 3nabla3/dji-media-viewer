@@ -1,9 +1,27 @@
 // lib/media-types.ts
 
+export interface GpsCoordinates {
+  latitude: number;
+  longitude: number;
+  altitude: number | null;
+}
+
+export interface VideoMetadata {
+  duration: number;
+  width: number;
+  height: number;
+  frameRate: number;
+  codec: string;
+  bitrate: number;
+  fileSize: number;
+  timestamp: Date;
+  gps: GpsCoordinates | null;
+}
+
 export interface VideoItem {
   type: "video";
   file: File;
-  date: Date;
+  metadata: VideoMetadata;
 }
 
 export interface PhotoItem {
