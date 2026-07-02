@@ -50,9 +50,9 @@ describe("parseVideoMetadata", () => {
     expect(metadata.timestamp).toEqual(new Date("2026-03-31T01:28:01.000Z"));
   });
 
-  it("parses gps as null (DJI_0376.MP4 has no XMP GPS)", async () => {
+  it("parses subtitleTrack", async () => {
     const metadata = await parseVideoMetadata(videoFile);
-    expect(metadata.gps).toBeNull();
+    expect(metadata.subtitleTrack.length).toBe(3);
   });
 
   it("returns the same Promise on repeated calls (cache hit)", () => {

@@ -3,7 +3,21 @@
 export interface GpsCoordinates {
   latitude: number;
   longitude: number;
-  altitude: number | null;
+  altitude: number;
+}
+
+export interface DjiSubtitleSample {
+  timestampSeconds: number;
+  aperture: number;
+  shutterSpeed: number;
+  iso: number;
+  exposureCompensation: number;
+  digitalZoom: number;
+  gps: GpsCoordinates;
+  distanceFromHome: number;
+  height: number;
+  horizontalSpeed: number;
+  verticalSpeed: number;
 }
 
 export interface VideoMetadata {
@@ -15,7 +29,7 @@ export interface VideoMetadata {
   bitrate: number;
   fileSize: number;
   timestamp: Date;
-  gps: GpsCoordinates | null;
+  subtitleTrack: DjiSubtitleSample[];
 }
 
 export interface VideoItem {

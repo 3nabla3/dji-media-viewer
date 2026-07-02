@@ -1,5 +1,7 @@
-import * as MP4Box from "mp4box";
+import { createFile } from "mp4box";
+import type { Movie } from "mp4box";
 import type { VideoMetadata } from "../media-types";
+import { parseDjiSubtitleTrack } from "./subtitle";
 
 const CHUNK = 4 * 1024 * 1024; // 4 MiB
 
@@ -16,7 +18,7 @@ function suppressMp4BoxErrors(): () => void {
   };
 }
 
-async function readMp4Info(file: File): Promise<MP4Box.MP4Info> {
+async function readMp4Info(file: File): Promise<Movie> {
   const slices: { start: number; end: number }[] = [{ start: 0, end: CHUNK }];
   if (file.size > CHUNK * 2) {
     slices.push({ start: file.size - CHUNK, end: file.size });
@@ -32,11 +34,11 @@ async function readMp4Info(file: File): Promise<MP4Box.MP4Info> {
     }),
   );
 
-  const mp4file = MP4Box.createFile();
+  const mp4file = createFile();
 
   return new Promise((resolve, reject) => {
     mp4file.onReady = resolve;
-    mp4file.onError = reject;
+    mp4file.onError = (_, message) => reject(new Error(message));
     for (const buf of buffers) {
       mp4file.appendBuffer(buf);
     }
@@ -44,7 +46,7 @@ async function readMp4Info(file: File): Promise<MP4Box.MP4Info> {
   });
 }
 
-function computeFrameRate(info: MP4Box.MP4Info): number | null {
+function computeFrameRate(info: Movie): number | null {
   const track = info.videoTracks?.[0];
   if (!track) return null;
   const { nb_samples, duration, timescale } = track;
@@ -56,7 +58,11 @@ async function doParseVideoMetadata(file: File): Promise<VideoMetadata> {
   const restoreConsole = suppressMp4BoxErrors();
 
   try {
-    const mp4Info = await readMp4Info(file);
+    const [mp4Info, subtitleTrack] = await Promise.all([
+      readMp4Info(file),
+      parseDjiSubtitleTrack(file),
+    ]);
+
     const videoTrack = mp4Info.videoTracks[0];
 
     const frameRate = computeFrameRate(mp4Info);
@@ -67,14 +73,14 @@ async function doParseVideoMetadata(file: File): Promise<VideoMetadata> {
 
     return {
       duration: mp4Info.duration / mp4Info.timescale,
-      width: videoTrack?.video.width ?? 0,
-      height: videoTrack?.video.height ?? 0,
+      width: videoTrack?.video?.width ?? 0,
+      height: videoTrack?.video?.height ?? 0,
       frameRate,
       codec: videoTrack?.codec ?? "",
       bitrate: videoTrack?.bitrate ?? 0,
       fileSize: file.size,
       timestamp,
-      gps: null,
+      subtitleTrack,
     };
   } finally {
     restoreConsole();
