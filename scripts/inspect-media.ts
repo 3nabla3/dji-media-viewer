@@ -4,7 +4,11 @@ import { basename, extname } from "node:path";
 import { parseVideoMetadata } from "../lib/parsers/video";
 import { parsePhotoMetadata } from "../lib/parsers/photo";
 import { parseHdrMetadata } from "../lib/parsers/hdr";
-import type { VideoMetadata, PhotoMetadata, HdrMetadata } from "../lib/media-types";
+import type {
+  VideoMetadata,
+  PhotoMetadata,
+  HdrMetadata,
+} from "../lib/media-types";
 
 const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
@@ -97,12 +101,18 @@ function printVideoMetadata(metadata: VideoMetadata): void {
     );
     console.log(`    relative alt:     ${first.relativeAltitude.toFixed(1)}m`);
     console.log(`    distance home:    ${first.distanceFromHome.toFixed(1)}m`);
-    console.log(`    horizontal speed: ${first.horizontalSpeed.toFixed(2)} m/s`);
+    console.log(
+      `    horizontal speed: ${first.horizontalSpeed.toFixed(2)} m/s`,
+    );
     console.log(`    vertical speed:   ${first.verticalSpeed.toFixed(2)} m/s`);
     console.log(`    aperture:         f/${first.aperture.toFixed(1)}`);
-    console.log(`    shutter speed:    ${formatShutterSpeed(first.shutterSpeed)}`);
+    console.log(
+      `    shutter speed:    ${formatShutterSpeed(first.shutterSpeed)}`,
+    );
     console.log(`    iso:              ${first.iso}`);
-    console.log(`    ev:               ${first.exposureCompensation.toFixed(2)}`);
+    console.log(
+      `    ev:               ${first.exposureCompensation.toFixed(2)}`,
+    );
     console.log(`    digital zoom:     ${first.digitalZoom.toFixed(2)}x`);
   }
 }
@@ -142,7 +152,11 @@ function printHdrMetadata(metadata: HdrMetadata, fileNames: string[]): void {
   const middleIndex = Math.floor(metadata.photos.length / 2);
   const middle = metadata.photos[middleIndex];
   const labels = metadata.photos.map((_, i) =>
-    i === middleIndex ? "Middle" : i < middleIndex ? "Under-exposed" : "Over-exposed",
+    i === middleIndex
+      ? "Middle"
+      : i < middleIndex
+        ? "Under-exposed"
+        : "Over-exposed",
   );
 
   console.log("\n[HDR Bracket Set]");
@@ -181,7 +195,10 @@ function printHdrMetadata(metadata: HdrMetadata, fileNames: string[]): void {
       if (values.json) {
         console.log(JSON.stringify(metadata, null, 2));
       } else {
-        printHdrMetadata(metadata, hdrFilePaths.map((p) => basename(p)));
+        printHdrMetadata(
+          metadata,
+          hdrFilePaths.map((p) => basename(p)),
+        );
       }
       return;
     }

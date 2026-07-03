@@ -50,7 +50,9 @@ describe("parseHdrMetadata", () => {
 
   it("photos[0].timestamp", async () => {
     const metadata = await parseHdrMetadata(bracketFiles);
-    expect(metadata.photos[0].timestamp).toEqual(new Date("2026-01-18T20:09:27.000Z"));
+    expect(metadata.photos[0].timestamp).toEqual(
+      new Date("2026-01-18T20:09:27.000Z"),
+    );
   });
 
   it("photos[0].width", async () => {
@@ -76,7 +78,9 @@ describe("parseHdrMetadata", () => {
 
   it("photos[1].timestamp", async () => {
     const metadata = await parseHdrMetadata(bracketFiles);
-    expect(metadata.photos[1].timestamp).toEqual(new Date("2026-01-18T20:09:27.000Z"));
+    expect(metadata.photos[1].timestamp).toEqual(
+      new Date("2026-01-18T20:09:27.000Z"),
+    );
   });
 
   it("photos[1].exposureCompensation", async () => {
@@ -92,7 +96,9 @@ describe("parseHdrMetadata", () => {
 
   it("photos[2].timestamp", async () => {
     const metadata = await parseHdrMetadata(bracketFiles);
-    expect(metadata.photos[2].timestamp).toEqual(new Date("2026-01-18T20:09:27.000Z"));
+    expect(metadata.photos[2].timestamp).toEqual(
+      new Date("2026-01-18T20:09:27.000Z"),
+    );
   });
 
   it("photos[2].exposureCompensation", async () => {
