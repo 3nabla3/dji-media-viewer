@@ -2,7 +2,8 @@
 import type { MediaItem } from "./media-types";
 
 function getItemDate(item: MediaItem): Date {
-  if (item.type === "video" || item.type === "photo") return item.metadata.timestamp;
+  if (item.type === "video" || item.type === "photo")
+    return item.metadata.timestamp;
   return item.date;
 }
 

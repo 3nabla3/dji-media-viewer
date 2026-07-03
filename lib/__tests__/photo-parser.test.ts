@@ -5,7 +5,9 @@ import { parsePhotoMetadata } from "../parsers/photo";
 
 const assetPath = resolve(__dirname, "assets/DJI_0158.JPG");
 const photoBuffer = readFileSync(assetPath);
-const photoFile = new File([photoBuffer], "DJI_0158.JPG", { type: "image/jpeg" });
+const photoFile = new File([photoBuffer], "DJI_0158.JPG", {
+  type: "image/jpeg",
+});
 
 describe("parsePhotoMetadata", () => {
   it("parses fileSize", async () => {

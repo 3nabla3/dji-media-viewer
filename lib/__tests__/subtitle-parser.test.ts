@@ -1,11 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { parseDjiSubtitleTrack, parseDjiSubtitleSampleText } from "../parsers/subtitle";
+import {
+  parseDjiSubtitleTrack,
+  parseDjiSubtitleSampleText,
+} from "../parsers/subtitle";
 
 const assetPath = resolve(__dirname, "assets/DJI_0376.MP4");
 const videoBuffer = readFileSync(assetPath);
-const videoFile = new File([videoBuffer], "DJI_0376.MP4", { type: "video/mp4" });
+const videoFile = new File([videoBuffer], "DJI_0376.MP4", {
+  type: "video/mp4",
+});
 
 const FIRST_SAMPLE_RAW =
   "F/2.8, SS 30.15, ISO 3200, EV +1.3, DZOOM 1.000, GPS (-73.5393, 45.5120, 21), D 552.38m, H 67.60m, H.S 14.54m/s, V.S -0.30m/s";

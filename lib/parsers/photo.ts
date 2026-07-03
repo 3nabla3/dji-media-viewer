@@ -3,7 +3,11 @@ import type { PhotoMetadata } from "../media-types";
 
 const photoMetadataCache = new Map<File, Promise<PhotoMetadata>>();
 
-function requireNumber(value: unknown, field: string, fileName: string): number {
+function requireNumber(
+  value: unknown,
+  field: string,
+  fileName: string,
+): number {
   if (typeof value !== "number") {
     throw new Error(`Missing required field "${field}" in ${fileName}`);
   }
@@ -24,18 +28,26 @@ async function doParsePhotoMetadata(file: File): Promise<PhotoMetadata> {
   const data = await exifr.parse(buffer, { xmp: true });
   if (!data) throw new Error(`Failed to parse EXIF from ${file.name}`);
 
-  const req = (value: unknown, field: string) => requireNumber(value, field, file.name);
+  const req = (value: unknown, field: string) =>
+    requireNumber(value, field, file.name);
 
   return {
     fileSize: file.size,
-    timestamp: requireDate(data.DateTimeOriginal, "DateTimeOriginal", file.name),
+    timestamp: requireDate(
+      data.DateTimeOriginal,
+      "DateTimeOriginal",
+      file.name,
+    ),
     width: req(data.ExifImageWidth, "ExifImageWidth"),
     height: req(data.ExifImageHeight, "ExifImageHeight"),
     iso: req(data.ISO, "ISO"),
     aperture: req(data.FNumber, "FNumber"),
     shutterSpeed: req(data.ExposureTime, "ExposureTime"),
     focalLength: req(data.FocalLength, "FocalLength"),
-    exposureCompensation: req(data.ExposureCompensation, "ExposureCompensation"),
+    exposureCompensation: req(
+      data.ExposureCompensation,
+      "ExposureCompensation",
+    ),
     gps: {
       latitude: req(data.latitude, "latitude"),
       longitude: req(data.longitude, "longitude"),

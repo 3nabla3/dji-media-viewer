@@ -54,10 +54,12 @@ async function doParseVideoMetadata(file: File): Promise<VideoMetadata> {
     const videoTrack = mp4Info.videoTracks[0];
 
     const frameRate = computeFrameRate(mp4Info);
-    if (frameRate === null) throw new Error(`No video track found in ${file.name}`);
+    if (frameRate === null)
+      throw new Error(`No video track found in ${file.name}`);
 
     const timestamp = mp4Info.created;
-    if (!timestamp) throw new Error(`No creation timestamp in mvhd for ${file.name}`);
+    if (!timestamp)
+      throw new Error(`No creation timestamp in mvhd for ${file.name}`);
 
     return {
       duration: mp4Info.duration / mp4Info.timescale,

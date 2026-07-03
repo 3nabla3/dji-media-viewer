@@ -10,7 +10,10 @@ function findDjiSubtitleTrack(movie: Movie): Track | undefined {
     const name = track.name.toLowerCase();
     return name.includes("dji") && name.includes("subtitle");
   };
-  return movie.subtitleTracks.find(isDjiSubtitle) ?? movie.otherTracks.find(isDjiSubtitle);
+  return (
+    movie.subtitleTracks.find(isDjiSubtitle) ??
+    movie.otherTracks.find(isDjiSubtitle)
+  );
 }
 
 function decodeSampleText(sample: Sample): string {
@@ -35,7 +38,9 @@ export function parseDjiSubtitleSampleText(
     return match ? parseFloat(match[1]) : NaN;
   };
 
-  const gpsMatch = raw.match(/GPS \(([+-]?[\d.]+), ([+-]?[\d.]+), ([+-]?[\d.]+)\)/);
+  const gpsMatch = raw.match(
+    /GPS \(([+-]?[\d.]+), ([+-]?[\d.]+), ([+-]?[\d.]+)\)/,
+  );
 
   return {
     timestampSeconds,
@@ -56,7 +61,9 @@ export function parseDjiSubtitleSampleText(
   };
 }
 
-export function parseDjiSubtitleTrack(file: File): Promise<DjiSubtitleSample[]> {
+export function parseDjiSubtitleTrack(
+  file: File,
+): Promise<DjiSubtitleSample[]> {
   const restoreConsole = suppressMp4BoxErrors();
   return new Promise((resolve, reject) => {
     const samples: DjiSubtitleSample[] = [];
@@ -77,10 +84,17 @@ export function parseDjiSubtitleTrack(file: File): Promise<DjiSubtitleSample[]> 
       mp4file.start();
     };
 
-    mp4file.onSamples = (_trackId: number, _user: unknown, newSamples: Sample[]) => {
+    mp4file.onSamples = (
+      _trackId: number,
+      _user: unknown,
+      newSamples: Sample[],
+    ) => {
       for (const sample of newSamples) {
         samples.push(
-          parseDjiSubtitleSampleText(decodeSampleText(sample), sample.dts / sample.timescale),
+          parseDjiSubtitleSampleText(
+            decodeSampleText(sample),
+            sample.dts / sample.timescale,
+          ),
         );
       }
     };

@@ -31,7 +31,10 @@ function makePhotoMetadata(timestamp: Date): PhotoMetadata {
 
 function makeItem(date: Date, idx = 0): { item: MediaItem; idx: number } {
   const file = new File([], "test.jpg");
-  return { item: { type: "photo", file, metadata: makePhotoMetadata(date) }, idx };
+  return {
+    item: { type: "photo", file, metadata: makePhotoMetadata(date) },
+    idx,
+  };
 }
 
 describe("groupByDate", () => {

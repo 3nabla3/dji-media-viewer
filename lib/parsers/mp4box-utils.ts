@@ -5,9 +5,12 @@ export function suppressMp4BoxErrors(): () => void {
   const originalError = console.error;
   console.error = (...args: unknown[]) => {
     if (
-      typeof args[1] === "string" && args[1].includes("[BoxParser]") && 
-      typeof args[2] === "string" && args[2].includes("Invalid box type:")
-    ) return;
+      typeof args[1] === "string" &&
+      args[1].includes("[BoxParser]") &&
+      typeof args[2] === "string" &&
+      args[2].includes("Invalid box type:")
+    )
+      return;
     originalError(...args);
   };
   return () => {
