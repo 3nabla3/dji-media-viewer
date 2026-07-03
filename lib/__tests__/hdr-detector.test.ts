@@ -1,14 +1,12 @@
 // lib/__tests__/hdr-detector.test.ts
 import { describe, it, expect } from "vitest";
 import { groupIntoBrackets } from "../hdr-detector";
-import type { JpgWithExif } from "../hdr-detector";
-import type { HdrItem } from "../media-types";
+import type { JpgWithExif, HdrBracket } from "../hdr-detector";
 
 function makeJpg(
   name: string,
   isoDate: string,
   bias: number | undefined,
-  xpType?: string,
 ): JpgWithExif {
   const file = Object.assign(new File([], name), {
     webkitRelativePath: `root/${name}`,
@@ -17,7 +15,6 @@ function makeJpg(
     file,
     dateTimeOriginal: new Date(isoDate),
     exposureBiasValue: bias,
-    xpCommentType: xpType,
   };
 }
 
@@ -39,7 +36,7 @@ describe("groupIntoBrackets", () => {
     const result = groupIntoBrackets(items);
     expect(result).toHaveLength(1);
     expect(result[0].type).toBe("hdr");
-    const hdr = result[0] as HdrItem;
+    const hdr = result[0] as HdrBracket;
     // files sorted ascending by ExposureBiasValue
     expect(hdr.files[0]).toBe(items[0].file); // -0.333 (under)
     expect(hdr.files[2]).toBe(items[2].file); // +1.0 (over)
@@ -53,7 +50,7 @@ describe("groupIntoBrackets", () => {
       makeJpg("DJI_0015.JPG", ts, 1.0),
     ];
     const result = groupIntoBrackets(items);
-    const hdr = result[0] as HdrItem;
+    const hdr = result[0] as HdrBracket;
     // sorted ascending: [-0.333, +0.333, +1.0] → median is index 1 (+0.333)
     expect(hdr.middle).toBe(items[1].file); // DJI_0014 at +0.333
   });
@@ -67,16 +64,7 @@ describe("groupIntoBrackets", () => {
     const result = groupIntoBrackets(items);
     expect(result).toHaveLength(1);
     expect(result[0].type).toBe("hdr");
-    expect((result[0] as HdrItem).files).toHaveLength(3);
-  });
-
-  it("excludes files with XPComment Type=P (panorama tiles)", () => {
-    const items = [
-      makeJpg("DJI_0001.JPG", "2024-01-01T10:00:00Z", 0, "P"),
-      makeJpg("DJI_0002.JPG", "2024-01-01T10:00:00Z", 0, "P"),
-    ];
-    const result = groupIntoBrackets(items);
-    expect(result).toHaveLength(0);
+    expect((result[0] as HdrBracket).files).toHaveLength(3);
   });
 
   it("returns mixed photos and HDR sets when timestamps vary", () => {
@@ -104,6 +92,6 @@ describe("groupIntoBrackets", () => {
     const result = groupIntoBrackets(items);
     expect(result).toHaveLength(1);
     expect(result[0].type).toBe("hdr");
-    expect((result[0] as HdrItem).files).toHaveLength(2);
+    expect((result[0] as HdrBracket).files).toHaveLength(2);
   });
 });

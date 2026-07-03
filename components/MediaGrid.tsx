@@ -7,7 +7,6 @@ import { groupByDate } from "@/lib/date-sections";
 import VideoCard from "./cards/VideoCard";
 import PhotoCard from "./cards/PhotoCard";
 import HdrCard from "./cards/HdrCard";
-import PanoramaCard from "./cards/PanoramaCard";
 
 interface MediaGridProps {
   items: MediaItem[];
@@ -45,9 +44,6 @@ export default function MediaGrid({ items, filter, onSelect }: MediaGridProps) {
                 )}
                 {item.type === "hdr" && (
                   <HdrCard item={item} onClick={() => onSelect(idx)} />
-                )}
-                {item.type === "panorama" && (
-                  <PanoramaCard item={item} onClick={() => onSelect(idx)} />
                 )}
               </Col>
             ))}

@@ -6,7 +6,6 @@ import { useMediaContext } from "@/lib/media-context";
 import PhotoDetail from "@/components/detail/PhotoDetail";
 import VideoDetail from "@/components/detail/VideoDetail";
 import HdrDetail from "@/components/detail/HdrDetail";
-import PanoramaDetail from "@/components/detail/PanoramaDetail";
 
 export default function MediaDetailPage() {
   const params = useParams<{ index: string }>();
@@ -47,7 +46,6 @@ export default function MediaDetailPage() {
       {item.type === "photo" && <PhotoDetail item={item} />}
       {item.type === "video" && <VideoDetail item={item} />}
       {item.type === "hdr" && <HdrDetail item={item} />}
-      {item.type === "panorama" && <PanoramaDetail item={item} />}
     </>
   );
 }

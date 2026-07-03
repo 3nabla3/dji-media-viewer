@@ -4,11 +4,8 @@ import type { MediaItem } from "./media-types";
 function getItemDate(item: MediaItem): Date {
   if (item.type === "video" || item.type === "photo")
     return item.metadata.timestamp;
-  if (item.type === "hdr") {
-    const photos = item.metadata.photos;
-    return photos[Math.floor(photos.length / 2)].timestamp;
-  }
-  return item.date;
+  const photos = item.metadata.photos;
+  return photos[Math.floor(photos.length / 2)].timestamp;
 }
 
 export interface DateSection {

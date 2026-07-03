@@ -13,28 +13,24 @@ export interface JpgWithExif {
   file: File;
   dateTimeOriginal: Date | undefined;
   exposureBiasValue: number | undefined;
-  /** Value of XPComment.Type field — 'P' means panorama tile, exclude from HDR logic */
-  xpCommentType: string | undefined;
 }
 
 /**
- * Groups JPG files (pre-sorted by filename) into PhotoItems and HdrItems.
+ * Groups JPG files (pre-sorted by filename) into PhotoCandidates and HdrBrackets.
  *
  * Rules:
- * - Files with xpCommentType === 'P' are excluded entirely.
  * - Consecutive files (adjacent in sort order) are merged into the same
  *   bracket group if they share the same DateTimeOriginal OR their timestamps
  *   differ by exactly 1 second.
- * - Groups of 2–3 become HdrItems; groups of 1 become PhotoItems.
- * - Within an HdrItem, `files` are sorted ascending by ExposureBiasValue.
- *   `middle` is the file with ExposureBiasValue closest to 0.
+ * - Groups of 2–3 become HdrBrackets; groups of 1 become PhotoCandidates.
+ * - Within an HdrBracket, `files` are sorted ascending by ExposureBiasValue.
+ *   `middle` is the median-index file in the EV-sorted array.
  */
 export function groupIntoBrackets(
   items: JpgWithExif[],
 ): (PhotoCandidate | HdrBracket)[] {
-  // Exclude panorama tiles
-  const eligible = items.filter((item) => item.xpCommentType !== "P");
-  if (eligible.length === 0) return [];
+  if (items.length === 0) return [];
+  const eligible = items;
 
   // Group consecutive items by timestamp proximity
   const groups: JpgWithExif[][] = [];

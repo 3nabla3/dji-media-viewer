@@ -2,7 +2,6 @@
 // NOTE: This module uses browser APIs (File, exifr). Call only from Client Components.
 import exifr from "exifr";
 import type { MediaItem } from "./media-types";
-import { collectPanoramaTiles } from "./panorama-resolver";
 import { groupIntoBrackets } from "./hdr-detector";
 import type { JpgWithExif } from "./hdr-detector";
 import { parsePhotoMetadata } from "./parsers/photo";
@@ -13,17 +12,6 @@ const JPG_EXTS = new Set([".jpg", ".jpeg"]);
 
 function ext(file: File): string {
   return file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
-}
-
-/**
- * Parses a raw XPComment value from exifr.
- * DJI encodes it as a semicolon-separated key=value string, e.g. "Type=P;...".
- * Returns the value of the `Type` key, or undefined if not found.
- */
-function parseXpCommentType(raw: unknown): string | undefined {
-  if (typeof raw !== "string") return undefined;
-  const match = raw.match(/Type=([^;]+)/i);
-  return match ? match[1].trim() : undefined;
 }
 
 export interface ParseMediaResult {
@@ -40,13 +28,11 @@ export async function parseMediaFiles(
   // Partition by type
   const videos: File[] = [];
   const jpgs: File[] = [];
-  const htmls: File[] = [];
 
   for (const file of allFiles) {
     const e = ext(file);
     if (VIDEO_EXTS.has(e)) videos.push(file);
     else if (JPG_EXTS.has(e)) jpgs.push(file);
-    else if (e === ".html") htmls.push(file);
   }
 
   // Sort JPGs by filename (preserves capture order)
@@ -57,7 +43,7 @@ export async function parseMediaFiles(
     jpgs.map((file) =>
       exifr
         .parse(file, {
-          pick: ["DateTimeOriginal", "ExposureCompensation", "XPComment"],
+          pick: ["DateTimeOriginal", "ExposureCompensation"],
         })
         .catch(() => null),
     ),
@@ -75,44 +61,11 @@ export async function parseMediaFiles(
         typeof exif?.ExposureCompensation === "number"
           ? exif.ExposureCompensation
           : undefined,
-      xpCommentType: parseXpCommentType(exif?.XPComment),
     };
   });
 
-  // Resolve panoramas — read HTML file text, find tiles
-  const panoramaResults = await Promise.all(
-    htmls.map(async (htmlFile) => {
-      const html = await htmlFile.text();
-      const tiles = collectPanoramaTiles(htmlFile, html, allFiles);
-      if (tiles.length === 0) {
-        const msg = `Panorama skipped: no tile files found for "${htmlFile.name}"`;
-        console.warn("[dji-media-viewer]", msg);
-        warnings.push(msg);
-        return null;
-      }
-      return {
-        type: "panorama" as const,
-        htmlFile,
-        tiles,
-        date: new Date(htmlFile.lastModified),
-      };
-    }),
-  );
-
-  const panoramaItems = panoramaResults.filter((p) => p !== null);
-
-  // Collect file paths used as panorama tiles so we can exclude them from HDR logic
-  const panoramaTilePaths = new Set(
-    panoramaItems.flatMap((p) => p.tiles.map((f) => f.webkitRelativePath)),
-  );
-
-  // Filter out panorama tile JPGs before HDR detection (belt-and-suspenders alongside XPComment check)
-  const nonTileJpgs = jpgsWithExif.filter(
-    (item) => !panoramaTilePaths.has(item.file.webkitRelativePath),
-  );
-
   const photoAndHdrItems = await Promise.all(
-    groupIntoBrackets(nonTileJpgs).map(async (group) => {
+    groupIntoBrackets(jpgsWithExif).map(async (group) => {
       if (group.type === "photo") {
         const metadata = await parsePhotoMetadata(group.file);
         return { type: "photo" as const, file: group.file, metadata };
@@ -128,7 +81,7 @@ export async function parseMediaFiles(
   const videoItems: MediaItem[] = [];
 
   return {
-    items: [...videoItems, ...photoAndHdrItems, ...panoramaItems],
+    items: [...videoItems, ...photoAndHdrItems],
     warnings,
   };
 }

@@ -80,11 +80,4 @@ export interface HdrItem {
   metadata: HdrMetadata;
 }
 
-export interface PanoramaItem {
-  type: "panorama";
-  htmlFile: File;
-  tiles: File[];
-  date: Date;
-}
-
-export type MediaItem = VideoItem | PhotoItem | HdrItem | PanoramaItem;
+export type MediaItem = VideoItem | PhotoItem | HdrItem;

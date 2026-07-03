@@ -9,13 +9,7 @@ import { useMediaContext } from "@/lib/media-context";
 import FilterTabs, { type FilterType } from "@/components/FilterTabs";
 import MediaGrid from "@/components/MediaGrid";
 
-const VALID_FILTERS = new Set<FilterType>([
-  "all",
-  "video",
-  "photo",
-  "hdr",
-  "panorama",
-]);
+const VALID_FILTERS = new Set<FilterType>(["all", "video", "photo", "hdr"]);
 
 function isFilterType(s: string | null): s is FilterType {
   return s != null && VALID_FILTERS.has(s as FilterType);

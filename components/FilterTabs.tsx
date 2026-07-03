@@ -3,7 +3,7 @@
 import { Nav, Badge } from "react-bootstrap";
 import type { MediaItem } from "@/lib/media-types";
 
-export type FilterType = "all" | "video" | "photo" | "hdr" | "panorama";
+export type FilterType = "all" | "video" | "photo" | "hdr";
 
 interface FilterTabsProps {
   items: MediaItem[];
@@ -16,7 +16,6 @@ const TABS: { key: FilterType; label: string }[] = [
   { key: "video", label: "Videos" },
   { key: "photo", label: "Photos" },
   { key: "hdr", label: "HDR" },
-  { key: "panorama", label: "Panoramas" },
 ];
 
 export default function FilterTabs({
