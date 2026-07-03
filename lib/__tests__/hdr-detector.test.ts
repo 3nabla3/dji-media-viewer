@@ -42,7 +42,7 @@ describe("groupIntoBrackets", () => {
     expect(hdr.files[2]).toBe(items[2].file); // +1.0 (over)
   });
 
-  it("picks middle exposure as the median of the EV-sorted array", () => {
+  it("places middle exposure at index 1 of the EV-sorted array", () => {
     const ts = "2024-01-01T10:00:02Z";
     const items = [
       makeJpg("DJI_0013.JPG", ts, -0.333),
@@ -51,8 +51,8 @@ describe("groupIntoBrackets", () => {
     ];
     const result = groupIntoBrackets(items);
     const hdr = result[0] as HdrBracket;
-    // sorted ascending: [-0.333, +0.333, +1.0] → median is index 1 (+0.333)
-    expect(hdr.middle).toBe(items[1].file); // DJI_0014 at +0.333
+    // sorted ascending: [-0.333, +0.333, +1.0] → middle is at index 1
+    expect(hdr.files[1]).toBe(items[1].file); // DJI_0014 at +0.333
   });
 
   it("handles 1-second boundary: merges consecutive files straddling a second", () => {

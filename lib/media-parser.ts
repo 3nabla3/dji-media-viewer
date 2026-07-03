@@ -71,8 +71,7 @@ export async function parseMediaFiles(
         return { type: "photo" as const, file: group.file, metadata };
       }
       const metadata = await parseHdrMetadata(group.files);
-      const middle = group.files[Math.floor(group.files.length / 2)];
-      return { type: "hdr" as const, files: group.files, middle, metadata };
+      return { type: "hdr" as const, files: group.files, metadata };
     }),
   );
 

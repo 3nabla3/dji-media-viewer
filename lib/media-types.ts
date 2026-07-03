@@ -75,8 +75,7 @@ export interface HdrMetadata {
  */
 export interface HdrItem {
   type: "hdr";
-  files: File[];
-  middle: File;
+  files: File[]; // [underexposed, middle, overexposed] — middle is always files[Math.floor(files.length / 2)]
   metadata: HdrMetadata;
 }
 

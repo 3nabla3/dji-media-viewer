@@ -13,7 +13,7 @@ import DetailNav from "./DetailNav";
 import { renderHdr } from "@/lib/opencv-hdr";
 
 export default function HdrDetail({ item }: { item: HdrItem }) {
-  const middleIndex = item.files.findIndex((f) => f.name === item.middle.name);
+  const middleIndex = Math.floor(item.files.length / 2);
 
   const [url, setUrl] = useState("");
   // TODO: restore ExifSections — use item.metadata.photos[selectedIndex] once ExifSections accepts PhotoMetadata
@@ -23,7 +23,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
   const mediaRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    const previewUrl = URL.createObjectURL(item.middle);
+    const previewUrl = URL.createObjectURL(item.files[middleIndex]);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setUrl(previewUrl);
     setHdrRendering(true);
@@ -57,14 +57,14 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
       if (hdrBlobUrl) URL.revokeObjectURL(hdrBlobUrl);
       if (errorTimer) clearTimeout(errorTimer);
     };
-  }, [item.files, item.middle]);
+  }, [item.files, middleIndex]);
 
   // TODO: restore ExifSections — metadata is now in item.metadata.photos[selectedIndex]
 
   return (
     <div>
       <DetailNav
-        filename={item.middle.name}
+        filename={item.files[middleIndex].name}
         badge={
           <Badge bg="warning" text="dark">
             HDR
@@ -79,7 +79,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
           <img
             ref={mediaRef}
             src={url}
-            alt={item.middle.name}
+            alt={item.files[middleIndex].name}
             className="img-fluid w-100"
           />
           {hdrRendering && (
@@ -114,7 +114,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
         <h6 className="text-uppercase text-muted mb-3">HDR Bracket Set</h6>
         <Row className="g-2 mb-4">
           {item.files.map((f, i) => {
-            const isMiddle = f.name === item.middle.name;
+            const isMiddle = i === middleIndex;
             const isSelected = i === selectedIndex;
             const label = isMiddle
               ? "Middle"

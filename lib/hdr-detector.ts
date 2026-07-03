@@ -4,8 +4,7 @@ type PhotoCandidate = { type: "photo"; file: File };
 
 export interface HdrBracket {
   type: "hdr";
-  files: File[]; // ascending by ExposureBiasValue
-  middle: File;
+  files: File[]; // [underexposed, middle, overexposed] — ascending by ExposureBiasValue
   date: Date; // cheap timestamp from batch EXIF read, used only during orchestration
 }
 
@@ -79,7 +78,6 @@ export function groupIntoBrackets(
     return {
       type: "hdr",
       files: sorted.map((s) => s.file),
-      middle: middle.file,
       date: middle.dateTimeOriginal ?? new Date(middle.file.lastModified),
     };
   });
