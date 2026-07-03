@@ -64,16 +64,20 @@ export interface PhotoItem {
   metadata: PhotoMetadata;
 }
 
+export interface HdrMetadata {
+  photos: PhotoMetadata[]; // ascending by exposureCompensation; middle is at index Math.floor(photos.length / 2)
+}
+
 /**
  * HDR bracket set. `middle` is the median-EV exposure used as the preview
  * thumbnail. `files` contains all 2–3 bracketed exposures sorted ascending
- * by ExposureBiasValue. `date` is the capture time of the middle exposure.
+ * by ExposureBiasValue, matching the order of `metadata.photos`.
  */
 export interface HdrItem {
   type: "hdr";
   files: File[];
   middle: File;
-  date: Date;
+  metadata: HdrMetadata;
 }
 
 export interface PanoramaItem {

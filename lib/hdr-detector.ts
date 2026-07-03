@@ -1,7 +1,13 @@
 // lib/hdr-detector.ts
-import type { HdrItem } from "./media-types";
 
 type PhotoCandidate = { type: "photo"; file: File };
+
+export interface HdrBracket {
+  type: "hdr";
+  files: File[]; // ascending by ExposureBiasValue
+  middle: File;
+  date: Date; // cheap timestamp from batch EXIF read, used only during orchestration
+}
 
 export interface JpgWithExif {
   file: File;
@@ -25,7 +31,7 @@ export interface JpgWithExif {
  */
 export function groupIntoBrackets(
   items: JpgWithExif[],
-): (PhotoCandidate | HdrItem)[] {
+): (PhotoCandidate | HdrBracket)[] {
   // Exclude panorama tiles
   const eligible = items.filter((item) => item.xpCommentType !== "P");
   if (eligible.length === 0) return [];
@@ -56,7 +62,7 @@ export function groupIntoBrackets(
   }
   groups.push(current);
 
-  return groups.map((group): PhotoCandidate | HdrItem => {
+  return groups.map((group): PhotoCandidate | HdrBracket => {
     if (group.length === 1) {
       return { type: "photo", file: group[0].file };
     }

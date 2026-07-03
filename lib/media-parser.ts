@@ -6,6 +6,7 @@ import { collectPanoramaTiles } from "./panorama-resolver";
 import { groupIntoBrackets } from "./hdr-detector";
 import type { JpgWithExif } from "./hdr-detector";
 import { parsePhotoMetadata } from "./parsers/photo";
+import { parseHdrMetadata } from "./parsers/hdr";
 
 const VIDEO_EXTS = new Set([".mp4", ".mov"]);
 const JPG_EXTS = new Set([".jpg", ".jpeg"]);
@@ -116,7 +117,9 @@ export async function parseMediaFiles(
         const metadata = await parsePhotoMetadata(group.file);
         return { type: "photo" as const, file: group.file, metadata };
       }
-      return group;
+      const metadata = await parseHdrMetadata(group.files);
+      const middle = group.files[Math.floor(group.files.length / 2)];
+      return { type: "hdr" as const, files: group.files, middle, metadata };
     }),
   );
 

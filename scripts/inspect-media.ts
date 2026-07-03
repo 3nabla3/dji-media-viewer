@@ -3,7 +3,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { basename, extname } from "node:path";
 import { parseVideoMetadata } from "../lib/parsers/video";
 import { parsePhotoMetadata } from "../lib/parsers/photo";
-import type { VideoMetadata, PhotoMetadata } from "../lib/media-types";
+import { parseHdrMetadata } from "../lib/parsers/hdr";
+import type { VideoMetadata, PhotoMetadata, HdrMetadata } from "../lib/media-types";
 
 const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
@@ -14,25 +15,46 @@ const { values, positionals } = parseArgs({
   strict: true,
 });
 
-const filePath = positionals[0];
+const subcommand = positionals[0];
+const isHdrSubcommand = subcommand === "hdr";
+const filePath = isHdrSubcommand ? undefined : subcommand;
+const hdrFilePaths = isHdrSubcommand ? positionals.slice(1) : [];
 
-if (!filePath) {
+if (!isHdrSubcommand && !filePath) {
   process.stderr.write(
-    "Error: file path is required\nUsage: bun scripts/inspect-media.ts <file> [--json]\n",
+    "Error: file path is required\n" +
+      "Usage:\n" +
+      "  bun scripts/inspect-media.ts <file> [--json]\n" +
+      "  bun scripts/inspect-media.ts hdr <file1> <file2> [<file3>] [--json]\n",
   );
   process.exit(1);
 }
 
-if (!existsSync(filePath)) {
+if (isHdrSubcommand && hdrFilePaths.length < 2) {
+  process.stderr.write(
+    "Error: hdr subcommand requires at least 2 file paths\n" +
+      "Usage: bun scripts/inspect-media.ts hdr <file1> <file2> [<file3>] [--json]\n",
+  );
+  process.exit(1);
+}
+
+if (!isHdrSubcommand && filePath && !existsSync(filePath)) {
   process.stderr.write(`Error: file not found: ${filePath}\n`);
   process.exit(1);
 }
 
-const extension = extname(filePath).toLowerCase();
+for (const path of hdrFilePaths) {
+  if (!existsSync(path)) {
+    process.stderr.write(`Error: file not found: ${path}\n`);
+    process.exit(1);
+  }
+}
+
+const extension = filePath ? extname(filePath).toLowerCase() : "";
 const isVideo = extension === ".mp4" || extension === ".mov";
 const isPhoto = extension === ".jpg" || extension === ".jpeg";
 
-if (!isVideo && !isPhoto) {
+if (!isHdrSubcommand && !isVideo && !isPhoto) {
   process.stderr.write(
     `Error: unsupported file extension "${extension}" — expected .mp4, .mov, .jpg, or .jpeg\n`,
   );
@@ -54,7 +76,7 @@ function formatShutterSpeed(exposureTime: number): string {
 
 function printVideoMetadata(metadata: VideoMetadata): void {
   console.log("\n[File]");
-  console.log(`  name:      ${basename(filePath)}`);
+  console.log(`  name:      ${basename(filePath!)}`);
   console.log(`  size:      ${formatBytes(metadata.fileSize)}`);
   console.log(`  timestamp: ${metadata.timestamp.toISOString()}`);
 
@@ -85,9 +107,9 @@ function printVideoMetadata(metadata: VideoMetadata): void {
   }
 }
 
-function printPhotoMetadata(metadata: PhotoMetadata): void {
+function printPhotoMetadata(metadata: PhotoMetadata, name: string): void {
   console.log("\n[File]");
-  console.log(`  name:      ${basename(filePath)}`);
+  console.log(`  name:      ${name}`);
   console.log(`  size:      ${formatBytes(metadata.fileSize)}`);
   console.log(`  timestamp: ${metadata.timestamp.toISOString()}`);
 
@@ -116,10 +138,56 @@ function printPhotoMetadata(metadata: PhotoMetadata): void {
   console.log(`  roll:  ${metadata.flightRoll.toFixed(1)}°`);
 }
 
+function printHdrMetadata(metadata: HdrMetadata, fileNames: string[]): void {
+  const middleIndex = Math.floor(metadata.photos.length / 2);
+  const middle = metadata.photos[middleIndex];
+  const labels = metadata.photos.map((_, i) =>
+    i === middleIndex ? "Middle" : i < middleIndex ? "Under-exposed" : "Over-exposed",
+  );
+
+  console.log("\n[HDR Bracket Set]");
+  console.log(`  brackets: ${metadata.photos.length}`);
+  console.log(`  timestamp: ${middle.timestamp.toISOString()}`);
+  console.log(`  resolution: ${middle.width}x${middle.height}`);
+
+  metadata.photos.forEach((photo, i) => {
+    console.log(`\n  [${labels[i]}] ${fileNames[i]}`);
+    console.log(`    size:          ${formatBytes(photo.fileSize)}`);
+    console.log(`    ev:            ${photo.exposureCompensation.toFixed(2)}`);
+    console.log(`    iso:           ${photo.iso}`);
+    console.log(`    shutter speed: ${formatShutterSpeed(photo.shutterSpeed)}`);
+  });
+
+  console.log("\n[GPS] (middle exposure)");
+  console.log(`  latitude:          ${middle.gps.latitude.toFixed(6)}`);
+  console.log(`  longitude:         ${middle.gps.longitude.toFixed(6)}`);
+  console.log(`  altitude:          ${middle.gps.altitude.toFixed(1)}m`);
+  console.log(`  relative altitude: ${middle.relativeAltitude.toFixed(1)}m`);
+
+  console.log("\n[Gimbal] (middle exposure)");
+  console.log(`  pitch: ${middle.gimbalPitch.toFixed(1)}°`);
+  console.log(`  yaw:   ${middle.gimbalYaw.toFixed(1)}°`);
+  console.log(`  roll:  ${middle.gimbalRoll.toFixed(1)}°`);
+}
+
 (async () => {
   try {
-    const buffer = readFileSync(filePath);
-    const file = new File([buffer], basename(filePath));
+    if (isHdrSubcommand) {
+      const files = hdrFilePaths.map((path) => {
+        const buffer = readFileSync(path);
+        return new File([buffer], basename(path), { type: "image/jpeg" });
+      });
+      const metadata = await parseHdrMetadata(files);
+      if (values.json) {
+        console.log(JSON.stringify(metadata, null, 2));
+      } else {
+        printHdrMetadata(metadata, hdrFilePaths.map((p) => basename(p)));
+      }
+      return;
+    }
+
+    const buffer = readFileSync(filePath!);
+    const file = new File([buffer], basename(filePath!));
     if (isVideo) {
       const metadata = await parseVideoMetadata(file);
       if (values.json) {
@@ -132,7 +200,7 @@ function printPhotoMetadata(metadata: PhotoMetadata): void {
       if (values.json) {
         console.log(JSON.stringify(metadata, null, 2));
       } else {
-        printPhotoMetadata(metadata);
+        printPhotoMetadata(metadata, basename(filePath!));
       }
     }
   } catch (error) {

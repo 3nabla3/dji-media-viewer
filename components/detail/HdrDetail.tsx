@@ -16,7 +16,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
   const middleIndex = item.files.findIndex((f) => f.name === item.middle.name);
 
   const [url, setUrl] = useState("");
-  // TODO: breaking change — was: const [exifList, setExifList] = useState<MediaExif[]>([]);
+  // TODO: restore ExifSections — use item.metadata.photos[selectedIndex] once ExifSections accepts PhotoMetadata
   const [selectedIndex, setSelectedIndex] = useState<number>(middleIndex);
   const [hdrRendering, setHdrRendering] = useState(false);
   const [hdrError, setHdrError] = useState(false);
@@ -59,7 +59,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
     };
   }, [item.files, item.middle]);
 
-  // TODO: breaking change — was: useEffect(() => { Promise.all(item.files.map(parseExif)).then(setExifList); }, [item.files]);
+  // TODO: restore ExifSections — metadata is now in item.metadata.photos[selectedIndex]
 
   return (
     <div>
@@ -148,10 +148,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
         </Row>
       </div>
 
-      {/* TODO: breaking change — ExifSections removed; restore when HdrItem gains PhotoMetadata[] */}
-      {/* {exifList[selectedIndex] && (
-        <ExifSections exif={exifList[selectedIndex]} file={item.files[selectedIndex]} />
-      )} */}
+      {/* TODO: restore ExifSections — use item.metadata.photos[selectedIndex] once ExifSections accepts PhotoMetadata */}
     </div>
   );
 }
