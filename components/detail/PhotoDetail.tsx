@@ -4,13 +4,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "react-bootstrap";
 import type { PhotoItem } from "@/lib/media-types";
-import { type MediaExif, parseExif } from "./exif";
 import DetailNav from "./DetailNav";
-import ExifSections from "./ExifSections";
+
+// TODO: breaking change — ExifSections and parseExif removed; rewrite to display item.metadata (PhotoMetadata) directly
+// import { type MediaExif, parseExif } from "./exif";
+// import ExifSections from "./ExifSections";
 
 export default function PhotoDetail({ item }: { item: PhotoItem }) {
   const [url, setUrl] = useState("");
-  const [exif, setExif] = useState<MediaExif>({});
   const mediaRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
@@ -20,9 +21,8 @@ export default function PhotoDetail({ item }: { item: PhotoItem }) {
     return () => URL.revokeObjectURL(objectUrl);
   }, [item.file]);
 
-  useEffect(() => {
-    parseExif(item.file).then(setExif);
-  }, [item.file]);
+  // TODO: breaking change — was: useEffect(() => { parseExif(item.file).then(setExif); }, [item.file]);
+  // Now use item.metadata directly (PhotoMetadata is pre-parsed at load time)
 
   return (
     <div>
@@ -42,7 +42,8 @@ export default function PhotoDetail({ item }: { item: PhotoItem }) {
         />
       )}
 
-      <ExifSections exif={exif} file={item.file} />
+      {/* TODO: breaking change — ExifSections expects MediaExif; rewrite to accept PhotoMetadata */}
+      {/* <ExifSections exif={exif} file={item.file} /> */}
     </div>
   );
 }

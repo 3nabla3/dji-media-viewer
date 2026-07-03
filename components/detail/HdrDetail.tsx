@@ -4,17 +4,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge, Col, Row, Spinner, Toast } from "react-bootstrap";
 import type { HdrItem } from "@/lib/media-types";
-import { type MediaExif, parseExif } from "./exif";
+// TODO: breaking change — parseExif and MediaExif deleted from exif.ts; rewrite to display HdrItem bracket metadata when HdrItem gains PhotoMetadata[]
+// import { type MediaExif, parseExif } from "./exif";
 import { formatBytes } from "./format";
 import DetailNav from "./DetailNav";
-import ExifSections from "./ExifSections";
+// TODO: breaking change — ExifSections expects MediaExif; update to accept PhotoMetadata when HdrItem is updated
+// import ExifSections from "./ExifSections";
 import { renderHdr } from "@/lib/opencv-hdr";
 
 export default function HdrDetail({ item }: { item: HdrItem }) {
   const middleIndex = item.files.findIndex((f) => f.name === item.middle.name);
 
   const [url, setUrl] = useState("");
-  const [exifList, setExifList] = useState<MediaExif[]>([]);
+  // TODO: breaking change — was: const [exifList, setExifList] = useState<MediaExif[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number>(middleIndex);
   const [hdrRendering, setHdrRendering] = useState(false);
   const [hdrError, setHdrError] = useState(false);
@@ -57,9 +59,7 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
     };
   }, [item.files, item.middle]);
 
-  useEffect(() => {
-    Promise.all(item.files.map(parseExif)).then(setExifList);
-  }, [item.files]);
+  // TODO: breaking change — was: useEffect(() => { Promise.all(item.files.map(parseExif)).then(setExifList); }, [item.files]);
 
   return (
     <div>
@@ -148,12 +148,10 @@ export default function HdrDetail({ item }: { item: HdrItem }) {
         </Row>
       </div>
 
-      {exifList[selectedIndex] && (
-        <ExifSections
-          exif={exifList[selectedIndex]}
-          file={item.files[selectedIndex]}
-        />
-      )}
+      {/* TODO: breaking change — ExifSections removed; restore when HdrItem gains PhotoMetadata[] */}
+      {/* {exifList[selectedIndex] && (
+        <ExifSections exif={exifList[selectedIndex]} file={item.files[selectedIndex]} />
+      )} */}
     </div>
   );
 }

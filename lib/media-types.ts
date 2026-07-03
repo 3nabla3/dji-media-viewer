@@ -15,9 +15,29 @@ export interface DjiSubtitleSample {
   digitalZoom: number;
   gps: GpsCoordinates;
   distanceFromHome: number;
-  height: number;
+  relativeAltitude: number;
   horizontalSpeed: number;
   verticalSpeed: number;
+}
+
+export interface PhotoMetadata {
+  fileSize: number;
+  timestamp: Date;
+  width: number;
+  height: number;
+  iso: number;
+  aperture: number;
+  shutterSpeed: number;
+  focalLength: number;
+  exposureCompensation: number;
+  gps: GpsCoordinates;
+  relativeAltitude: number;
+  gimbalPitch: number;
+  gimbalYaw: number;
+  gimbalRoll: number;
+  flightPitch: number;
+  flightYaw: number;
+  flightRoll: number;
 }
 
 export interface VideoMetadata {
@@ -41,7 +61,7 @@ export interface VideoItem {
 export interface PhotoItem {
   type: "photo";
   file: File;
-  date: Date;
+  metadata: PhotoMetadata;
 }
 
 /**

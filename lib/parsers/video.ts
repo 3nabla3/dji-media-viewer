@@ -2,21 +2,9 @@ import { createFile } from "mp4box";
 import type { Movie } from "mp4box";
 import type { VideoMetadata } from "../media-types";
 import { parseDjiSubtitleTrack } from "./subtitle";
+import { suppressMp4BoxErrors } from "./mp4box-utils";
 
 const CHUNK = 4 * 1024 * 1024; // 4 MiB
-
-// DJI (and most cameras) write the moov atom at the end of the file.
-// Suppresses a spurious mp4box BoxParser console.error that Next.js surfaces as an overlay error.
-function suppressMp4BoxErrors(): () => void {
-  const originalError = console.error;
-  console.error = (...args: unknown[]) => {
-    if (typeof args[1] === "string" && args[1].includes("[BoxParser]")) return;
-    originalError(...args);
-  };
-  return () => {
-    console.error = originalError;
-  };
-}
 
 async function readMp4Info(file: File): Promise<Movie> {
   const slices: { start: number; end: number }[] = [{ start: 0, end: CHUNK }];

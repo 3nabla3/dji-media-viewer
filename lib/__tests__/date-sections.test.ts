@@ -1,15 +1,37 @@
 // lib/__tests__/date-sections.test.ts
 import { describe, it, expect } from "vitest";
 import { groupByDate } from "../date-sections";
-import type { MediaItem } from "../media-types";
+import type { MediaItem, PhotoMetadata } from "../media-types";
 
 // Fixed reference point: Thursday 2024-06-13 10:00 local time
 // ISO week 24 of 2024 spans Mon 2024-06-10 → Sun 2024-06-16
 const NOW = new Date("2024-06-13T10:00:00");
 
+function makePhotoMetadata(timestamp: Date): PhotoMetadata {
+  return {
+    fileSize: 0,
+    timestamp,
+    width: 0,
+    height: 0,
+    iso: 0,
+    aperture: 0,
+    shutterSpeed: 0,
+    focalLength: 0,
+    exposureCompensation: 0,
+    gps: { latitude: 0, longitude: 0, altitude: 0 },
+    relativeAltitude: 0,
+    gimbalPitch: 0,
+    gimbalYaw: 0,
+    gimbalRoll: 0,
+    flightPitch: 0,
+    flightYaw: 0,
+    flightRoll: 0,
+  };
+}
+
 function makeItem(date: Date, idx = 0): { item: MediaItem; idx: number } {
   const file = new File([], "test.jpg");
-  return { item: { type: "photo", file, date }, idx };
+  return { item: { type: "photo", file, metadata: makePhotoMetadata(date) }, idx };
 }
 
 describe("groupByDate", () => {

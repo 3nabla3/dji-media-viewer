@@ -1,6 +1,7 @@
 import { createFile } from "mp4box";
 import type { Movie, Track, Sample } from "mp4box";
 import type { DjiSubtitleSample } from "../media-types";
+import { suppressMp4BoxErrors } from "./mp4box-utils";
 
 const CHUNK = 4 * 1024 * 1024;
 
@@ -49,13 +50,14 @@ export function parseDjiSubtitleSampleText(
       altitude: gpsMatch ? parseFloat(gpsMatch[3]) : NaN,
     },
     distanceFromHome: extractNumber(/D ([\d.]+)m/),
-    height: extractNumber(/ H ([\d.]+)m/),
+    relativeAltitude: extractNumber(/ H ([\d.]+)m/),
     horizontalSpeed: extractNumber(/H\.S ([+-]?[\d.]+)m\/s/),
     verticalSpeed: extractNumber(/V\.S ([+-]?[\d.]+)m\/s/),
   };
 }
 
 export function parseDjiSubtitleTrack(file: File): Promise<DjiSubtitleSample[]> {
+  const restoreConsole = suppressMp4BoxErrors();
   return new Promise((resolve, reject) => {
     const samples: DjiSubtitleSample[] = [];
     // keepMdatData=true retains mdat buffers so sample .data can be populated.
@@ -97,8 +99,10 @@ export function parseDjiSubtitleTrack(file: File): Promise<DjiSubtitleSample[]> 
           mp4file.appendBuffer(ab);
         }
         mp4file.flush();
+        restoreConsole();
         resolve(samples);
       } catch (err) {
+        restoreConsole();
         reject(err);
       }
     })();

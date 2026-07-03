@@ -1,9 +1,8 @@
 // lib/date-sections.ts
 import type { MediaItem } from "./media-types";
 
-// TODO: breaking change — VideoItem.date removed; video items fall back to epoch when timestamp is null
 function getItemDate(item: MediaItem): Date {
-  if (item.type === "video") return item.metadata.timestamp ?? new Date(0);
+  if (item.type === "video" || item.type === "photo") return item.metadata.timestamp;
   return item.date;
 }
 

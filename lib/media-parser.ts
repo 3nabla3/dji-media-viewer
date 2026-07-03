@@ -5,6 +5,7 @@ import type { MediaItem } from "./media-types";
 import { collectPanoramaTiles } from "./panorama-resolver";
 import { groupIntoBrackets } from "./hdr-detector";
 import type { JpgWithExif } from "./hdr-detector";
+import { parsePhotoMetadata } from "./parsers/photo";
 
 const VIDEO_EXTS = new Set([".mp4", ".mov"]);
 const JPG_EXTS = new Set([".jpg", ".jpeg"]);
@@ -109,7 +110,15 @@ export async function parseMediaFiles(
     (item) => !panoramaTilePaths.has(item.file.webkitRelativePath),
   );
 
-  const photoAndHdrItems = groupIntoBrackets(nonTileJpgs);
+  const photoAndHdrItems = await Promise.all(
+    groupIntoBrackets(nonTileJpgs).map(async (group) => {
+      if (group.type === "photo") {
+        const metadata = await parsePhotoMetadata(group.file);
+        return { type: "photo" as const, file: group.file, metadata };
+      }
+      return group;
+    }),
+  );
 
   // TODO: breaking change — VideoItem no longer has .date; VideoItem now requires metadata: VideoMetadata
   // Orchestration will be updated in a follow-up phase to call parseVideoMetadata for each video file

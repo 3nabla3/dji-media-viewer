@@ -61,9 +61,9 @@ describe("parseDjiSubtitleSampleText", () => {
     expect(sample.distanceFromHome).toBeCloseTo(552.38, 2);
   });
 
-  it("parses height", () => {
+  it("parses relativeAltitude", () => {
     const sample = parseDjiSubtitleSampleText(FIRST_SAMPLE_RAW, 0);
-    expect(sample.height).toBeCloseTo(67.6, 2);
+    expect(sample.relativeAltitude).toBeCloseTo(67.6, 2);
   });
 
   it("parses horizontalSpeed", () => {
